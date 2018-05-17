@@ -107,7 +107,13 @@ NOTE: if a hit for any position within a contig cannot be found, the whole conti
 
 If the query genome is very distant to the reference (i.e. no regions of homology - very unlikely), contig disposal can be completely turned off if reorder is set to False to prevent any sorting, but the resulting plot will have very few or no connections at all.
 
+## Citations
 
+If used for academic publications, please cite the following publications:
+
+*A Publication Comming Soon Here*. In the meantime, please cite the GitHub page.
+
+Camacho C., *et al* (2008) BLAST+: architecture and applications. BMC Bioinformatics 10:421. [PubMed](https://www.ncbi.nlm.nih.gov/pubmed/20003500?dopt=Citation)
 
 ## Other Notes
 
