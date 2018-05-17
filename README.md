@@ -10,7 +10,7 @@ Download and build the BLAST package from NCBI ftp://ftp.ncbi.nlm.nih.gov/blast/
 
 If not already installed, run:
 	
-	pip install numpy, colorcet
+	pip install numpy colorcet svgwrite
 
 Run:
 
