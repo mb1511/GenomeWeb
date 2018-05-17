@@ -14,7 +14,7 @@ import os
 BLAST_PATH = ''
 
 if 'blast-' not in os.environ['PATH']:
-    raise OSError('BLAST executables not found. Please set genomeweb.blast.BLAST_PATH to path/to/NCBI/blast+x.x.x/bin')
+    raise OSError('BLAST executables not found. Please set genomeweb.blast.BLAST_PATH to path/to/NCBI/blast-x.x.x+/bin')
     #BLAST_PATH = 'path/to/NCBI/blast-2.7.1+/bin/'
 
 def run(db=None, db_path='', 

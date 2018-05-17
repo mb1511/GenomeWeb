@@ -195,7 +195,7 @@ def create_web(
         include_reference=False,
         reorder=True,
         palette='bgy',
-        palette_usage=0.8,
+        palette_usage=1.0,
         bezier_max_n=4,
         connection_opts=dict(
             stroke_width='0.34', stroke_opacity='0.4'),
@@ -203,7 +203,7 @@ def create_web(
             stroke='black', stroke_width='1'),
         inner_radius=100,
         outer_radius=300,
-        boarder_offset=80,
+        border_offset=80,
         x_scaling='200%',
         y_scaling='200%',
         add_labels=True,
@@ -211,7 +211,57 @@ def create_web(
         reorder_opts=dict(),
         matches_opts=dict()):
     '''
-    TODO: add doc string
+    Create Gemoic Comparison Web
+    
+    Usage:
+    
+    >>> genomeweb.create_web(genome_list, reference_genome, **options)
+    
+    Necessary Arguments:
+        
+        Name               Type     Description
+        
+        genome_array       list     list of paths to genomes                
+        reference_genome   str      path to reference to order contigs
+                                    by (not required if reorder=False)
+
+    Standard Options:
+
+        working_directory  str      path to scratch space for program
+                                    to write files
+        out_file           str      path to output SVG file
+        include_referecne  bool     include referecne genome in
+                                    resulting map                            
+        reorder            bool     reorder contigs against reference
+        palette            str      color palette to use from 
+                                    colorcet.palette
+        add_labels         bool     add labels to axes
+        label_offset       float    label offset
+        inner_radius       int      inner-shell radius
+        outer_radius       int      distance from inner shell to outer-
+                                    shell bounds
+        border_offset      int      distance from border (increase to
+                                    correctly display longer genome
+                                    names)
+        matches_opts       dict     kwargs to parse to find matches 
+                                    function, such as %id cutoff value
+                                    (pid_cov) and minimum hit length
+                                    (hit_len) for use in filtering hits
+                                
+    Advanced Options:
+
+        palette_usage      float    decimal percent of palette spectrum
+                                    to use
+        bezier_max_n       int      max number of genomes before
+                                    straight lines are used instead of
+                                    bezier curves (set to 0 for always
+                                    striaght)
+        x_scaling          str      SVG x scaling factor
+        y_scaling          str      SVG y scaling factor
+        connection_opts    dict     dictionary of line options
+        axes_opts          dict     dictionary of axes options
+        reorder_opts       dict     kwargs to parse to reorder function
+      
     '''
     
     if include_reference:
@@ -258,7 +308,7 @@ def create_web(
     # outer-shell radius
     r = outer_radius + pre_r
     # outer-shell boarder offset
-    offset = boarder_offset
+    offset = border_offset
     # origin    
     ox = r + pre_r + offset
     oy = r + pre_r + offset
