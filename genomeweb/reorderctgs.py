@@ -161,7 +161,7 @@ def run(
             db=join(wd, 'nuc_2.fna'),
             db_path=join(wd, 'db.fna'),
             query=join(wd, 'nuc_1.fna'),
-            out=join(wd, 'temp_blast.xml)',
+            out=join(wd, 'temp_blast.xml'),
             mr=0, mev=10000,
             outfmt='details', join_hsps=False,
             db_type='nucl',

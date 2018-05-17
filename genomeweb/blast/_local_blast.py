@@ -112,9 +112,6 @@ def run(db=None, db_path='',
         o = _o.communicate()[0]
         #print(o)
         #print(e)
-        
-    if file_handle.blast_q is not None:
-        file_handle.blast_q.unblock()   # lift any file blocks to query
     
     if out != '-':
         rd = False
@@ -124,13 +121,14 @@ def run(db=None, db_path='',
     
     try:
         if outfmt == 'clustal':
-            output = _read.clustal(out, raw_data=rd, num_ret=mr, expect=mev)
+            output = read.clustal(out, raw_data=rd, num_ret=mr, expect=mev)
         elif outfmt == 'fasta':
-            output = _read.fasta(out, raw_data=rd, num_ret=mr, expect=mev)
+            output = read.fasta(out, raw_data=rd, num_ret=mr, expect=mev)
         elif outfmt == 'details':
             # returns list [ query0[ hit0, ... ], ... ]
-            output = _read.details(out, raw_data=rd, num_ret=mr, 
-                                   join_hsps=join_hsps, expect=mev, r_a=r_a)
+            output = read.details(
+                out, raw_data=rd, num_ret=mr,
+                join_hsps=join_hsps, expect=mev, r_a=r_a)
     except StopIteration:
         # null record
         return 'No match found.'

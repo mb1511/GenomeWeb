@@ -20,7 +20,7 @@ setup(
     author='Matt Brewer',
     author_email='mb1511@bristol.ac.uk',
     license='GPLv3',
-    packages=['genomeweb'],
+    packages=['genomeweb', 'genomeweb/blast'],
     install_requires=['numpy', 'colorcet'],
     zip_safe=False)
 

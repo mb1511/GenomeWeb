@@ -18,6 +18,29 @@ import fasta
 from blast import local_blast
 import reorderctgs
 
+def _get_props(gene_name):
+    p = dict([ x.split('=') for x in re.findall('(?<=\[)(.*?)(?=\])', gene_name) if len(x.split('=')) == 2 ])
+    contig = re.findall('(?<=\|)(.*?)(?=_cds)', gene_name)
+    if not contig:
+        contig = re.findall('(?<=\>)(.*?)(?=_cds)', gene_name)
+    try:
+        p['contig'] = contig[0]
+    except IndexError:
+        # no contig
+        pass
+    return p
+
+def _get_loc(props):
+    if 'comp' in props['location']:
+        props['location'] = props['location'][11:-1]
+    if 'join' in props['location']:
+        props['location'] = props['location'][5:-1].split(',')
+        props['location'] = props['location'][0] + '..' + props['location'][1]
+    l =  props['location'].split('..')
+    f = re.sub('[<;>]|&lt|&gt', '', l[0])
+    t = re.sub('[<;>]|&lt|&gt', '', l[1])
+    return (f, t)
+
 def _get_matches(
         n1, n2, chunk=2000, step=5000, pid_cov=90, hit_len=1500,
         short_ctgs=False, shortck=30, shortsp=100, wd=''):
@@ -173,7 +196,7 @@ def create_web(
         reorder=True,
         palette='bgy',
         palette_usage=0.8,
-        bezier_max_n=4
+        bezier_max_n=4,
         connection_opts=dict(
             stroke_width='0.34', stroke_opacity='0.4'),
         axes_opts=dict(
@@ -224,7 +247,7 @@ def create_web(
         genome_sizes.append(sum(contig_sizes[-1]))     
         # adds generator to matches list
         matches.append(_get_matches(
-            genome_array[i-1], g, wd=working_directory **matches_opts))
+            genome_array[i-1], g, wd=working_directory, **matches_opts))
         # will return ctg_l, pos_l, ctg_r, pos_r and pid
         # when evaluated
     
@@ -278,7 +301,7 @@ def create_web(
             # change this depending on color scheme used
             if pid < pid_cov:
                 pid = pid_cov
-            pid = int(255 * (pid - pid_cov) * palette_usage)
+            pid = int(255 * palette_usage * (pid - pid_cov) / (100 - pid_cov) )
             n_paths += 1
             hive.connect(
                 hive.axes[i-1], node_index, np.pi/4,
