@@ -85,3 +85,7 @@ Plot with no contig re-indexing:
 Plot post contig re-indexing:
 
 ![three spoke](https://github.com/mb1511/GenomeWeb/blob/master/examples/tri.svg)
+
+20 Just for fun:
+
+![twenty](https://github.com/mb1511/GenomeWeb/blob/master/examples/twenty.svg)
