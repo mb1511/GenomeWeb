@@ -62,12 +62,14 @@ Advanced Options:
 	                            to use
 	bezier_max_n       int      max number of genomes before straight   4
 	                            lines are used instead of bezier
-	                            curves (set to 0 for always striaght)
-	x_scaling          str      SVG x scaling factor                    '500px'
-	y_scaling          str      SVG y scaling factor                    '500px'
+	                            curves (set to 0 for always straight)
+	x_scaling          str      SVG x scale factor                      '500px'
+	y_scaling          str      SVG y scale factor                      '500px'
 	connection_opts    dict     dictionary of line options
 	axes_opts          dict     dictionary of axes options
 	reorder_opts       dict     kwargs to parse to reorder function
+	svg_opts           dict     additional properties for base SVG 
+	                            (see svgwrite for docs)
 	
 	
 

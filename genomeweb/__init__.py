@@ -209,7 +209,8 @@ def create_web(
         add_labels=True,
         label_offset=1.1,
         reorder_opts=dict(),
-        matches_opts=dict()):
+        matches_opts=dict(),
+        svg_opts=dict()):
     '''
     Create Gemoic Comparison Web
     
@@ -255,12 +256,14 @@ def create_web(
         bezier_max_n       int      max number of genomes before
                                     straight lines are used instead of
                                     bezier curves (set to 0 for always
-                                    striaght)
-        x_scaling          str      SVG x scaling factor
-        y_scaling          str      SVG y scaling factor
+                                    straight)
+        x_scaling          str      SVG x scale factor
+        y_scaling          str      SVG y scale factor
         connection_opts    dict     dictionary of line options
         axes_opts          dict     dictionary of axes options
         reorder_opts       dict     kwargs to parse to reorder function
+        svg_opts           dict     additional properties for base SVG
+                                    (see svgwrite for docs)
       
     '''
     
@@ -321,7 +324,11 @@ def create_web(
             ))
     xb = int(re.search(r'\d+', x_scaling).group())
     yb = int(re.search(r'\d+', y_scaling).group())
-    hive = Hiveplot(out_file, size=(x_scaling, y_scaling), viewBox='0 0 %d %d' % (xb, yb))
+    hive = Hiveplot(
+        out_file,
+        size=(x_scaling, y_scaling),
+        viewBox='0 0 %d %d' % (xb, yb),
+        **svg_opts)
     hive.axes = [Axis(
         start=a, end=b,
         **axes_opts
