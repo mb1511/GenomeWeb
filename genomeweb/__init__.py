@@ -319,7 +319,9 @@ def create_web(
             (int(ox + pre_r * np.cos(theta * i)), int(oy + pre_r * np.sin(theta * i))),
             (int(ox + r * np.cos(theta * i)), int(oy + r * np.sin(theta * i)))
             ))
-    hive = Hiveplot(out_file, size=(x_scaling, y_scaling))
+    xb = int(re.search(r'\d+', x_scaling).group())
+    yb = int(re.search(r'\d+', y_scaling).group())
+    hive = Hiveplot(out_file, size=(x_scaling, y_scaling), viewBox='0 0 %d %d' % (xb, yb))
     hive.axes = [Axis(
         start=a, end=b,
         **axes_opts
