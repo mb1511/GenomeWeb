@@ -6,7 +6,7 @@ A Python script to create Genomic Webs based on percentage identity
 
 ## Installation
 
-Download and install BLAST from [NCBI site](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/)
+Download and install BLAST from [NCBI](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+)
 (tested with blast-2.7.1+)
 
 If not already installed, run:
