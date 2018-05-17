@@ -77,6 +77,4 @@ Advanced Options:
 
 The pyveplot2 module is a heavily modified version of [pyveplot](https://github.com/rgarcia-herrera/pyveplot)
 
-## Examples
 
-![](https://github.com/mb1511/GenomeWeb/blob/master/examples/tri.svg)
