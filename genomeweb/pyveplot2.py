@@ -231,7 +231,7 @@ class Node(Drawing):
         self.add(self.text(
             self.ID,
             insert=(self.x, self.y),
-            style='font-size:18px; font-family:Arial',
+            style='font-size:11px; font-family:Arial',
             text_anchor='end' if self.x < ox else 'start'))
 
 if __name__ == '__main__':
