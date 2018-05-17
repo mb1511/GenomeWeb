@@ -78,4 +78,4 @@ The pyveplot2 module is a heavily modified version of [pyveplot](https://github.
 
 ## Examples
 
-![three spoke](../blob/master/examples/tri.svg)
+![three spoke](https://github.com/mb1511/GenomeWeb/blob/master/examples/tri.svg)
