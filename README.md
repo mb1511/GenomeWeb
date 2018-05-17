@@ -56,6 +56,19 @@ Standard Options:
 	                            (pid_cov) and minimum hit length
 	                            (hit_len) for use in filtering hits
 	                            
+Example for editing match searching and filtering options:
+
+	create_web(
+		files, ref,
+		matches_opts=dict(
+			chunk=3000,		# query length of 3000 bp
+			step=2000,		# step length of 2000 bp between queries
+			pid_cov=85,		# filter out hits below 85 % identity
+			hit_len=1200))		# filter out hits less than 1200 bp
+
+CAUTION: keep filtering resonably high or drastically increase step length to increase speed, clarity and reduce file sizes
+
+	                            
 Advanced Options:
 
 	palette_usage      float    decimal percent of palette spectrum     1.0
@@ -71,7 +84,29 @@ Advanced Options:
 	svg_opts           dict     additional properties for base SVG 
 	                            (see svgwrite for docs)
 	
-	
+Example for reorder_opts for increase reordering speed (similar set of options to match finding):
+
+	create_web(
+		files, ref,
+		reorder_opts=dict(
+			chunk=2000,		# query length of 2000 bp
+			step=10000,		# step length of 10000 bp between queries
+			short_ctgs=False))	# throws away contigs less than chunk size
+
+Example for reorder_opts but retaining short contigs:
+
+	create_web(
+		files, ref,
+		reorder_opts=dict(
+			chunk=2000,		# query length of 2000 bp
+			step=10000,		# step length of 10000 bp between queries
+			shortck=30,		# short contig query of 30 bp
+			shortsp=200))		# short contig step of 200 bp
+
+NOTE: if a hit for any position within a contig cannot be found, the whole contig will be discarded. Contigs will also be discarded if their length is below the minimum query size and when short contig searching is turned off (on by default).
+
+If the query genome is very distant to the reference (i.e. no regions of homology - very unlikely), contig disposal can be completely turned off if reorder is set to False to prevent any sorting, but the resulting plot will have very few or no connections at all.
+
 
 
 ## Other Notes
