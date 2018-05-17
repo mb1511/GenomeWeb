@@ -1,12 +1,12 @@
 # Genome Web
 
-# Description
+## Description
 
 A Python script to create Genomic Webs based on percentage identity
 
-# Installation
+## Installation
 
-Download and install BLAST from NCBI ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/
+Download and install BLAST from [NCBI](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/)
 (tested with blast-2.7.1+)
 
 If not already installed, run:
@@ -17,7 +17,7 @@ Run:
 
 	./setup.py install
 
-# Usage
+## Usage
 
 	import genomeweb
 	
@@ -73,8 +73,10 @@ Advanced Options:
 	
 
 
-# Other Notes:
+## Other Notes
 
-The pyveplot2 module is a heavily modified version of pyveplot (https://github.com/rgarcia-herrera/pyveplot)
+The pyveplot2 module is a heavily modified version of [pyveplot](https://github.com/rgarcia-herrera/pyveplot)
 
+## Examples
 
+![](https://github.com/mb1511/GenomeWeb/blob/master/examples/tri.svg)
