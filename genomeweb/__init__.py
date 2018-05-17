@@ -201,9 +201,9 @@ def create_web(
             stroke_width='0.34', stroke_opacity='0.4'),
         axes_opts=dict(
             stroke='black', stroke_width='1'),
-        inner_radius=10,
-        outer_radius=30,
-        border_offset=8,
+        inner_radius=30,
+        outer_radius=140,
+        border_offset=10,
         x_scaling='500px',
         y_scaling='500px',
         add_labels=True,

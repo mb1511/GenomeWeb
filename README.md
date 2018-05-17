@@ -46,10 +46,10 @@ Standard Options:
 	palette            str      color palette to use from cc.palette    'bgy'
 	add_labels         bool     add labels to axes                      True
 	label_offset       float    label offset                            1.1
-	inner_radius       int      inner-shell radius                      100
-	outer_radius       int      distance from inner shell to outer-     300
+	inner_radius       int      inner-shell radius                      30
+	outer_radius       int      distance from inner shell to outer-     140
 	                            shell bounds
-	border_offset      int      distance from border (increase to       80
+	border_offset      int      distance from border (increase to       10
 	                            correctly display longer genome names)
 	matches_opts       dict     kwargs to parse to find matches 
 	                            function, such as %id cutoff value
@@ -63,8 +63,8 @@ Advanced Options:
 	bezier_max_n       int      max number of genomes before straight   4
 	                            lines are used instead of bezier
 	                            curves (set to 0 for always striaght)
-	x_scaling          str      SVG x scaling factor                    '200%'
-	y_scaling          str      SVG y scaling factor                    '200%'
+	x_scaling          str      SVG x scaling factor                    '500px'
+	y_scaling          str      SVG y scaling factor                    '500px'
 	connection_opts    dict     dictionary of line options
 	axes_opts          dict     dictionary of axes options
 	reorder_opts       dict     kwargs to parse to reorder function
