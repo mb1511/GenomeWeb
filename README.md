@@ -26,7 +26,7 @@ Run:
 
 If BLAST cannot be found on the system path, set it explicitly before running:
 
-	genomeweb.blast.BLSAT_PATH = path/to/NCBI/blast+x.x.x/bin
+	genomeweb.blast.BLAST_PATH = path/to/NCBI/blast-x.x.x+/bin
 		
 Necessary Arguments:
 
