@@ -11,45 +11,31 @@ contains an arbitrary number of *Axis* objects which in turn contain an
 arbitrary number of *Node* objects, and a method to connect them.
 
 Change Notes:
-
     - Hiveplot, Axis and Node all inherit from Drawing class
       -> increase user power and decrease verbosity
-      
          - User can parse Drawing options on init, e.g. size=('x%','y%')
            See svgwrite.drawing.Drawing() for more information
-    
          - Allows addition of axis using Hiveplot.add(axis) rather than
            defining self.axes list
-       
          - User no longer has to use Hiveplot.dwg.attribute to access
            Drawing elements
-    
-    - Removed Hiveplot.draw_axes() method; containg code was moved to
+    - Removed Hiveplot.draw_axes() method; containing code was moved to
       Hiveplot.save()
-      
     - Removed Axis.draw(); axis "draw" code moved to init and nodes are
       added to the axis when they are defined using Axis.add_node()
-    
     - Removed Axis.getDwg(); same thing is achieved on calling Axis()
       once initiated
-    
     - Aixs.angle is now property
       -> removes requirement for function call and can simply get 
          attribute using Axis.angle
-    
-    - Removed Node.getDwg() - just returns self
-    
-    - Removed example from Doc String. Example given did not work, see
-      end for working example
-      -> May be worth providing test suite and examples
-    
+    - Removed Node.getDwg()
+    - Removed example from Doc String
     - Gave classes a simple __repr__
-    
     - Applied PEP8 and some stylistic tweaks (subjective)
 """
 
 from svgwrite import cm, mm, Drawing
-from math import sin, cos, atan2, degrees, radians, tan, sqrt
+from math import sin, cos, atan2, degrees, radians, tan, sqrt, pi
 
 class Hiveplot(Drawing):
     """
@@ -68,8 +54,8 @@ class Hiveplot(Drawing):
     
     def connect(
             self,
-            axis0, n0_index, source_angle,
-            axis1, n1_index, target_angle,
+            axis0=None, n0_index=0, source_angle=0,
+            axis1=None, n1_index=0, target_angle=0,
             curved=True,
             **kwargs):
         """
@@ -95,6 +81,7 @@ class Hiveplot(Drawing):
         n1_index     : key of target node in nodes dictionary of axis1
         target_angle : angle of departure for invisible axis that
                        diverges from axis1 and holds second control points
+        curved       : draw bezier (True) or straight line (False)
         kwargs       : extra SVG attributes for path element, optional
                        Set or change attributes using key=value
         """ 
@@ -129,6 +116,7 @@ class Hiveplot(Drawing):
             pth.push("%.f %.f" % (n1.x, n1.y))
             self.add(pth)
         else:
+            # connect with a straight line from point to point
             self.add(self.line(
                 (n0.x, n0.y),
                 (n1.x, n1.y),
@@ -196,6 +184,7 @@ class Axis(Drawing):
         node.x = self.start[0] + (width * offset)
         node.y = self.start[1] + (height * offset)
         
+        # add label if one exists
         if node.draw_label:
             node.add_label(self.start[0])
         
@@ -257,20 +246,20 @@ if __name__ == '__main__':
         if (e[0] in h.axes[0].nodes) and (e[1] in h.axes[1].nodes):
             # edges from axis0 to axis1    
             h.connect(
-                h.axes[0], e[0], 45,
-                h.axes[1], e[1], -45,
+                h.axes[0], e[0], pi/4,
+                h.axes[1], e[1], -pi/4,
                 stroke_width='0.34', stroke_opacity='0.4', stroke='purple')
         elif (e[0] in h.axes[0].nodes) and (e[1] in h.axes[2].nodes):
             # edges from axis0 to axis2
             h.connect(
-                h.axes[0], e[0], -45,
-                h.axes[2], e[1], 45,
+                h.axes[0], e[0], -pi/4,
+                h.axes[2], e[1], pi/4,
                 stroke_width='0.34', stroke_opacity='0.4', stroke='red')
         elif (e[0] in h.axes[1].nodes) and (e[1] in h.axes[2].nodes):
             # edges from axis1 to axis2
             h.connect(
-                h.axes[1], e[0], 15,
-                h.axes[2], e[1], -15,
+                h.axes[1], e[0], pi/8,
+                h.axes[2], e[1], -pi/8,
                 stroke_width='0.34', stroke_opacity='0.4', stroke='magenta')
     h.save()
         
