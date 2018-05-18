@@ -10,7 +10,6 @@ from pyveplot2 import Hiveplot, Axis, Node
 import svgwrite as sw
 import re
 from os.path import basename, splitext, join, exists
-import glob
 import numpy as np
 import colorcet as cc
 
