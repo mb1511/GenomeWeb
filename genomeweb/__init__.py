@@ -9,7 +9,7 @@ from __future__ import print_function
 from pyveplot2 import Hiveplot, Axis, Node
 import svgwrite as sw
 import re
-from os.path import basename, splitext, join
+from os.path import basename, splitext, join, exists
 import glob
 import numpy as np
 import colorcet as cc
@@ -266,27 +266,60 @@ def create_web(
                                     (see svgwrite for docs)
       
     '''
-    
+
+    # check all files exist before running anything
+    if isinstance(reference_genome, (list, tuple)):
+        # check the length of the two lists match if using multiple
+        # reference genomes
+        assert len(reference_genome) == len(genome_array), 'Unequal number of references and query genomes.'
+        for f in reference_genome:
+            if f:
+                assert exists(f), '%s cannot be found.' % f
+    else:
+        assert exists(reference_genome), '%s cannot be found.' % reference_genome
+    for f in genome_array:
+        assert exists(f), '%s cannot be found.' % f
+        
     if include_reference:
         genome_array.append(reference_genome)
     
     print('Number of Genomes: ', len(genome_array))
+    
+    if isinstance(reference_genome, (list, tuple)):
+        print('Number of unique reference genomes: %d' % len(set(reference_genome)))
     
     names = [splitext(basename(g))[0] for g in genome_array]
     
     # reindex all contigs against reference
     # -> new adjusted array
     if reorder:
+        ref_to_use = ''
         for i, genome in enumerate(genome_array):
             if not include_reference or i != len(genome_array)-1:
-                genome_array[i] = reorderctgs.run(
-                    genome, reference_genome,
-                    order_out=join(
-                        working_directory,
-                        '%s_reorder.fna' % splitext(basename(genome))[0]),
-                    make_db=not i,
-                    wd=working_directory,
-                    **reorder_opts)
+                if isinstance(reference_genome, (list, tuple)):
+                    ref = reference_genome[i]
+                    p_ref = reference_genome[-1]
+                    if ref:
+                        ref_to_use = ref
+                    # only make new db for unique/non-empty/initial
+                    # genome in referecne list, else use previous entry
+                    genome_array[i] = reorderctgs.run(
+                        genome, ref_to_use,
+                        order_out=join(
+                            working_directory,
+                            '%s_reorder.fna' % splitext(basename(genome))[0]),
+                        make_db=(not i or ref != p_ref) and ref,
+                        wd=working_directory,
+                        **reorder_opts)
+                else:
+                    genome_array[i] = reorderctgs.run(
+                        genome, reference_genome,
+                        order_out=join(
+                            working_directory,
+                            '%s_reorder.fna' % splitext(basename(genome))[0]),
+                        make_db=not i,
+                        wd=working_directory,
+                        **reorder_opts)
     
     matches = []
     contig_sizes = []

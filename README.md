@@ -53,7 +53,9 @@ Necessary Arguments:
 	
 	genome_array       list     list of paths to genomes				
 	reference_genome   str      path to reference to order contigs by
-	                            (not required if reorder=False)
+	                            (not required if reorder=False). See
+	                            advanced options if using a list of 
+	                            references
 
 Standard Options:
 
@@ -91,6 +93,10 @@ CAUTION: keep filtering resonably high or drastically increase step length to in
 	                            
 Advanced Options:
 
+	reference_genome   list     list of reference genomes to use for
+	                            each specific genome in the genome 
+	                            list. If the reference is the same as
+	                            the previous, just enter "".
 	palette_usage      float    decimal percent of palette spectrum     1.0
 	                            to use
 	bezier_max_n       int      max number of genomes before straight   4
