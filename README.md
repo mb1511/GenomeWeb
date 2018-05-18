@@ -2,26 +2,46 @@
 
 ## Description
 
-A Python script to create Genomic Webs based on percentage identity
+A Python script to create Genomic Webs based on percentage identity.
 
 ## Installation
 
+Requires Python 2.7. Working on a 3.6-compatible version.
+
 Download and install BLAST from <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+> (tested with blast-2.7.1+)
 
-If not already installed, run:
+If using an installer, it should automatically prepend the system path.
+
+If the following libraries are not already installed, run the following command from a Terminal/Command Prompt:
 	
 	pip install numpy colorcet svgwrite
 
-Run:
+(pip should be installed by default with Python)
+
+Install the scripts:
+
+* Download and unzip this repository.
+* Navigate to the download direcotry and open a Terminal/Command Prompt/PowerShell here (Shift + Right-click on Windows gives the option for this)
+* Run the install script:
+
+On UNIX-based systems:
 
 	./setup.py install
+	
+On any platform:
+
+	python setup.py install
 
 ## Usage
 
 	import genomeweb
 	
-	if __name__ == '__main__':
-		genomeweb.create_web(genome_list, reference_genome, **options)
+	genomeweb.create_web([
+			'genome1.fna',
+			'genome2.fna',
+			'genome3.fna'],		# can be a list of arbitrary length
+		'reference_genome.fna',	# can be any genome (only necessary when re-indexing)
+		**options)			# see list of available options below
 
 If BLAST cannot be found on the system path, set it explicitly before running:
 
@@ -78,11 +98,21 @@ Advanced Options:
 	                            curves (set to 0 for always straight)
 	x_scaling          str      SVG x scale factor                      '500px'
 	y_scaling          str      SVG y scale factor                      '500px'
-	connection_opts    dict     dictionary of line options
-	axes_opts          dict     dictionary of axes options
+	connection_opts    dict     extra connection options
+	axes_opts          dict     extra axes options
 	reorder_opts       dict     kwargs to parse to reorder function
 	svg_opts           dict     additional properties for base SVG 
 	                            (see svgwrite for docs)
+
+If adding connection or axes options, the defaults will all be overwritten. 
+
+Default connection options:
+
+	connection_opts=dict(stroke_width='0.34', stroke_opacity='0.4')
+	
+Default axes options:
+
+	axes_opts=dict(stroke='black', stroke_width='1')
 	
 Example for reorder_opts for increase reordering speed (similar set of options to match finding):
 
@@ -120,6 +150,8 @@ Camacho C., *et al* (2008) BLAST+: architecture and applications. BMC Bioinforma
 The pyveplot2 module is a heavily modified version of [pyveplot](https://github.com/rgarcia-herrera/pyveplot)
 
 ## Examples
+
+See example [script](https://github.com/mb1511/GenomeWeb/blob/master/examples/test_genome_cmp.py) for generation of the following plots:
 
 Plot with no contig re-indexing:
 
