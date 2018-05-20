@@ -8,6 +8,7 @@ from __future__ import print_function
 
 from pyveplot2 import Hiveplot, Axis, Node
 import svgwrite as sw
+import svgutils as su
 import re
 from os.path import basename, splitext, join, exists
 import numpy as np
@@ -191,42 +192,34 @@ def _get_matches(
 def create_web(
         genome_array=[], reference_genome='',
         working_directory='', out_file='default.svg',
-        include_reference=False,
-        reorder=True,
-        palette='bgy',
-        palette_usage=1.0,
+        include_reference=False, reorder=True,
+        palette='bgy', palette_usage=1.0,
         bezier_max_n=4,
         connection_opts=dict(
             stroke_width='0.34', stroke_opacity='0.4'),
         axes_opts=dict(
             stroke='black', stroke_width='1'),
-        inner_radius=30,
-        outer_radius=140,
-        border_offset=10,
-        x_scaling='500px',
-        y_scaling='500px',
-        add_labels=True,
-        label_offset=1.1,
+        size=500, inner_radius=12, outer_radius=64, border_offset=None,
+        rotation=0, x=0, y=0, width=None, height=None, viewBox=None,
+        label_names=[], add_labels=True, label_offset=1.1,
+        font_size=11, font_family='Arial', custom_font=None,
         reorder_opts=dict(),
         matches_opts=dict(),
-        svg_opts=dict()):
+        svg_opts=dict(),
+        append=False):
     '''
     Create Gemoic Comparison Web
-    
-    Usage:
-    
-    >>> genomeweb.create_web(genome_list, reference_genome, **options)
     
     Necessary Arguments:
         
         Name               Type     Description
         
         genome_array       list     list of paths to genomes                
-        reference_genome   str      path to reference to order contigs
-                                    by (not required if reorder=False)
 
     Standard Options:
-
+    
+        reference_genome   str      path to reference to order contigs
+                                    by (required if reorder=True)
         working_directory  str      path to scratch space for program
                                     to write files
         out_file           str      path to output SVG file
@@ -236,18 +229,32 @@ def create_web(
         palette            str      color palette to use from 
                                     colorcet.palette
         add_labels         bool     add labels to axes
-        label_offset       float    label offset
-        inner_radius       int      inner-shell radius
-        outer_radius       int      distance from inner shell to outer-
-                                    shell bounds
-        border_offset      int      distance from border (increase to
-                                    correctly display longer genome
-                                    names)
+        label_offset       float    label offset, 1.0-1.5 should be
+                                    fine, default = 1.1
+        inner_radius       int      inner-shell radius (% of size) 
+        outer_radius       int      inner shell to outer-shell bounds
+                                    (% of size)
         matches_opts       dict     kwargs to parse to find matches 
                                     function, such as %id cutoff value
                                     (pid_cov) and minimum hit length
                                     (hit_len) for use in filtering hits
-                                
+                                    
+    Basic geometry options
+    
+        size               int      size of hive plot in px
+        x                  int      x origin, default = 0
+        y                  int      y origin, dafault = 0
+        rotation           float    value in degrees to rotate all axes
+                                    by (clockwise direction)
+                                    
+    Mulit-panel geometry options:
+        
+        append             bool     append output to existing SVG,
+                                    default to append is out_file
+        append             str      file to append
+        width              int      width of final SVG in px
+        height             int      height of fnial SVG in px
+                        
     Advanced Options:
 
         palette_usage      float    decimal percent of palette spectrum
@@ -256,26 +263,45 @@ def create_web(
                                     straight lines are used instead of
                                     bezier curves (set to 0 for always
                                     straight)
-        x_scaling          str      SVG x scale factor
-        y_scaling          str      SVG y scale factor
+        custom_font        str      full custom SVG text element for
+                                    labels e.g.
+                                    "font-size:12px; font-family:Arial;
+                                    font-style:italic"
         connection_opts    dict     dictionary of line options
         axes_opts          dict     dictionary of axes options
         reorder_opts       dict     kwargs to parse to reorder function
         svg_opts           dict     additional properties for base SVG
                                     (see svgwrite for docs)
-      
+    
+    Additional options (likely do not need to be altered):
+    
+        border_offset      int      distance from border, default
+                                    calculated automatically
+        viewBox            tuple    viewBox for SVG, default
+                                    calculated automatically        
+    
+    Usage:
+    
+        >>> fig = genomeweb.create_web(genome_list, **options)
+        >>> # Returns svgutils.transform.SVGFigure for any extra post editing.
+        >>> # e.g. add an "A" to the top left of the figure.
+        >>> import svgutils.transform as sg
+        >>> fig.append(sg.TextElement(0, 20, 'A', size=12))
+        >>> fig.save('figure.svg')
+    
     '''
 
     # check all files exist before running anything
     if isinstance(reference_genome, (list, tuple)):
         # check the length of the two lists match if using multiple
         # reference genomes
-        assert len(reference_genome) == len(genome_array), 'Unequal number of references and query genomes.'
+        assert len(reference_genome) == len(genome_array), 'Unequal \
+number of references and query genomes.'
         for f in reference_genome:
             if f:
                 assert exists(f), '%s cannot be found.' % f
-    else:
-        assert exists(reference_genome), '%s cannot be found.' % reference_genome
+    elif reorder:
+        assert exists(reference_genome), 'Reference genome: %s cannot be found.' % reference_genome
     for f in genome_array:
         assert exists(f), '%s cannot be found.' % f
         
@@ -285,9 +311,41 @@ def create_web(
     print('Number of Genomes: ', len(genome_array))
     
     if isinstance(reference_genome, (list, tuple)):
-        print('Number of unique reference genomes: %d' % len(set(reference_genome)))
+        if '' not in reference_genome:
+            unq = len(set(reference_genome))
+        else:
+            unq = len(set(reference_genome)) - 1
+        print('Number of unique reference genomes: %d' % unq)
+            
     
-    names = [splitext(basename(g))[0] for g in genome_array]
+    # ======== Setup and Check Geometry ========
+    
+    # inner-shell radius
+    pre_r = int(inner_radius * size / 200)
+    # outer-shell radius
+    r = int(outer_radius * size / 200) + pre_r
+    if border_offset:
+        # outer-shell boarder offset
+        offset = int(border_offset * size / 200)
+    else:
+        offset = size / 2 - r
+        assert offset >= 0, 'Some axes may not be visible in resulting\
+ output. Decrease radii percentages to below 100 total.'
+    assert r + offset <= size / 2, 'Some axes may not be visible in \
+resulting output. Decrease radii percentages to below 100 total.'
+    # origin    
+    ox = x + r + offset
+    oy = y + r + offset
+    
+    # ======== Re-index Contigs ========
+    
+    # set label names
+    if not label_names:
+        names = [splitext(basename(g))[0] for g in genome_array]
+    else:
+        assert len(label_names) == len(genome_array), 'Number of labels\
+ does not match number of genomes.'
+        names = label_names
     
     # reindex all contigs against reference
     # -> new adjusted array
@@ -338,28 +396,41 @@ def create_web(
     
     # ======== Define Axes ========
     
-    # inner-shell radius
-    pre_r = inner_radius
-    # outer-shell radius
-    r = outer_radius + pre_r
-    # outer-shell boarder offset
-    offset = border_offset
-    # origin    
-    ox = r + pre_r + offset
-    oy = r + pre_r + offset
+    # axis geometry
     positions = []
     theta = (2 * np.pi)/len(genome_array)
+    i_theta = np.deg2rad(rotation)
     for i in xrange(len(genome_array)):
+        angle = i_theta + theta * i
         positions.append((
-            (int(ox + pre_r * np.cos(theta * i)), int(oy + pre_r * np.sin(theta * i))),
-            (int(ox + r * np.cos(theta * i)), int(oy + r * np.sin(theta * i)))
+            (
+                int(ox + pre_r * np.cos(angle)),
+                int(oy + pre_r * np.sin(angle))),
+            (
+                int(ox + r * np.cos(angle)),
+                int(oy + r * np.sin(angle)))
             ))
-    xb = int(re.search(r'\d+', x_scaling).group())
-    yb = int(re.search(r'\d+', y_scaling).group())
+    
+    # set global geometry
+    if width is None:
+        width = size
+    if height is None:
+        height = size
+    if viewBox is None:
+        viewBox = (0, 0, width, height)
+        
+    # save previous SVG in memory, if in append mode
+    if append:
+        if isinstance(append, bool):
+            template = su.transform.fromfile(out_file)
+        else:
+            template = su.transform.fromfile(append)
+    
+    # define hive plot object
     hive = Hiveplot(
         out_file,
-        size=(x_scaling, y_scaling),
-        viewBox='0 0 %d %d' % (xb, yb),
+        size=('%dpx' % width, '%dpx' % height),
+        viewBox='%d %d %d %d' % viewBox,
         **svg_opts)
     hive.axes = [Axis(
         start=a, end=b,
@@ -406,14 +477,28 @@ def create_web(
         hive.axes[i].nodes = []
     
     # ======== Add Labels to Axes ========
-    
+    if not custom_font:
+        font='font-size:%dpx; font-family:%s' % (font_size, font_family)
+    else:
+        font=custom_font
     if add_labels:
         for i, g in enumerate(names):
-            hive.axes[i].add_node(Node(g, draw_label=True), offset=label_offset)
+            hive.axes[i].add_node(
+                Node(g, draw_label=True),
+                offset=label_offset, font=font)
     
+    # ======== Save and write svg ========
     print('Total number of connections: ', n_paths)
-    # Save and write svg
-    print('Saving %s...' % out_file)
+    if append:
+        print('Saving and merging files...')
+    else:
+        print('Saving %s...' % out_file)
     hive.save()
+    if append:
+        template.append(su.transform.fromfile(out_file))
+        template.save(out_file)
+    else:
+        template = su.transform.fromfile(out_file)
     print('Finished.')
-    return 0
+    su.transform.TextElement
+    return template

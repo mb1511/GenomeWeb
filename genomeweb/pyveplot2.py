@@ -167,7 +167,7 @@ class Axis(Drawing):
             (self.end[0] - self.start[0])**2 +
             (self.end[1] - self.start[1])**2)
     
-    def add_node(self, node, offset):
+    def add_node(self, node, offset, font='font-size:11px; font-family:Arial'):
         """
         Add a Node object to nodes dictionary, calculating its
         coordinates using offset
@@ -186,7 +186,7 @@ class Axis(Drawing):
         
         # add label if one exists
         if node.draw_label:
-            node.add_label(self.start[0])
+            node.add_label(self.start[0], font)
         
         self.nodes.append(node)
         self.add(node)
@@ -216,11 +216,11 @@ class Node(Drawing):
         self.r = 1.5
         self.draw_label = draw_label
         
-    def add_label(self, ox=0):
+    def add_label(self, ox=0, font='font-size:11px; font-family:Arial'):
         self.add(self.text(
             self.ID,
             insert=(self.x, self.y),
-            style='font-size:11px; font-family:Arial',
+            style=font,
             text_anchor='end' if self.x < ox else 'start'))
 
 if __name__ == '__main__':
