@@ -49,13 +49,13 @@ If BLAST cannot be found on the system path, set it explicitly before running:
 
 An `svgutils.transform.SVGFigure` is returned for any annotations to be made post plot completion. See [svgutils](https://github.com/btel/svg_utils) for full documentation.
 		
-### Necessary Arguments:
+### Necessary Arguments
         
         Name               Type     Description
         
         genome_array       list     list of paths to genomes                
 
-### Standard Options:
+### Standard Options
     
         reference_genome   str      path to reference to order contigs
                                     by (required if reorder=True)
@@ -86,7 +86,7 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
         rotation           float    value in degrees to rotate all axes
                                     by (clockwise direction)
                                     
-### Mulit-panel Geometry Options:
+### Mulit-panel Geometry Options
         
         append             bool     append output to existing SVG,
                                     default to append is out_file
@@ -94,7 +94,7 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
         width              int      width of final SVG in px
         height             int      height of fnial SVG in px
                         
-### Advanced Options:
+### Advanced Options
 
         palette_usage      float    decimal percent of palette spectrum
                                     to use
@@ -112,14 +112,14 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
         svg_opts           dict     additional properties for base SVG
                                     (see svgwrite for docs)
     
-### Additional Options (likely do not need to be altered):
+### Additional Options (likely do not need to be altered)
     
         border_offset      int      distance from border, default
                                     calculated automatically
         viewBox            tuple    viewBox for SVG, default
                                     calculated automatically  
 	                            
-### Example for editing match searching and filtering options:
+### Example for editing match searching and filtering options
 
 	create_web(
 		files, ref,
@@ -134,15 +134,15 @@ CAUTION: keep filtering resonably high or drastically increase step length to in
 
 If adding connection or axes options, the defaults will all be overwritten. 
 
-### Default connection options:
+### Default connection options
 
 	connection_opts=dict(stroke_width='0.34', stroke_opacity='0.4')
 	
-### Default axes options:
+### Default axes options
 
 	axes_opts=dict(stroke='black', stroke_width='1')
 	
-### Example for reorder_opts for increase reordering speed (similar set of options to match finding):
+### Example for reorder_opts for increase reordering speed (similar set of options to match finding)
 
 	create_web(
 		files, ref,
@@ -151,7 +151,7 @@ If adding connection or axes options, the defaults will all be overwritten.
 			step=10000,		# step length of 10000 bp between queries
 			short_ctgs=False))	# throws away contigs less than chunk size
 
-### Example for reorder_opts but retaining short contigs:
+### Example for reorder_opts but retaining short contigs
 
 	create_web(
 		files, ref,
