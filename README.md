@@ -203,14 +203,19 @@ The pyveplot2 module is a heavily modified version of [pyveplot](https://github.
 
 See example [script](https://github.com/mb1511/GenomeWeb/blob/master/examples/test_genome_cmp.py) for generation of the following plots:
 
-Plot with no contig re-indexing:
+### Plot with no contig re-indexing:
 
 ![unordered](https://github.com/mb1511/GenomeWeb/blob/master/examples/unordered_tri.svg)
 
-Plot post contig re-indexing:
+### Plot post contig re-indexing:
 
 ![three spoke](https://github.com/mb1511/GenomeWeb/blob/master/examples/tri.svg)
 
-20 Just for fun:
+### 20 Just for fun:
 
 ![twenty](https://github.com/mb1511/GenomeWeb/blob/master/examples/twenty.svg)
+
+### Multi-panel Example.
+See [multi_panel.py](https://github.com/mb1511/GenomeWeb/blob/master/examples/multi_panel.py) for source.
+
+![multi](https://github.com/mb1511/GenomeWeb/blob/master/examples/multi_panel.svg)
