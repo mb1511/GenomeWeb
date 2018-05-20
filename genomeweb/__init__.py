@@ -500,5 +500,4 @@ resulting output. Decrease radii percentages to below 100 total.'
     else:
         template = su.transform.fromfile(out_file)
     print('Finished.')
-    su.transform.TextElement
     return template
