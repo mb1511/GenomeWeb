@@ -78,7 +78,7 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
                                     (pid_cov) and minimum hit length
                                     (hit_len) for use in filtering hits
                                     
-###Basic Geometry Options
+##Basic Geometry Options
     
         size               int      size of hive plot in px
         x                  int      x origin, default = 0
@@ -86,7 +86,7 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
         rotation           float    value in degrees to rotate all axes
                                     by (clockwise direction)
                                     
-###Mulit-panel Geometry Options:
+##Mulit-panel Geometry Options:
         
         append             bool     append output to existing SVG,
                                     default to append is out_file
@@ -94,7 +94,7 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
         width              int      width of final SVG in px
         height             int      height of fnial SVG in px
                         
-###Advanced Options:
+##Advanced Options:
 
         palette_usage      float    decimal percent of palette spectrum
                                     to use
@@ -112,14 +112,14 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
         svg_opts           dict     additional properties for base SVG
                                     (see svgwrite for docs)
     
-###Additional Options (likely do not need to be altered):
+##Additional Options (likely do not need to be altered):
     
         border_offset      int      distance from border, default
                                     calculated automatically
         viewBox            tuple    viewBox for SVG, default
                                     calculated automatically  
 	                            
-###Example for editing match searching and filtering options:
+Example for editing match searching and filtering options:
 
 	create_web(
 		files, ref,
@@ -134,15 +134,15 @@ CAUTION: keep filtering resonably high or drastically increase step length to in
 
 If adding connection or axes options, the defaults will all be overwritten. 
 
-###Default connection options:
+Default connection options:
 
 	connection_opts=dict(stroke_width='0.34', stroke_opacity='0.4')
 	
-###Default axes options:
+Default axes options:
 
 	axes_opts=dict(stroke='black', stroke_width='1')
 	
-###Example for reorder_opts for increase reordering speed (similar set of options to match finding):
+Example for reorder_opts for increase reordering speed (similar set of options to match finding):
 
 	create_web(
 		files, ref,
@@ -151,7 +151,7 @@ If adding connection or axes options, the defaults will all be overwritten.
 			step=10000,		# step length of 10000 bp between queries
 			short_ctgs=False))	# throws away contigs less than chunk size
 
-###Example for reorder_opts but retaining short contigs:
+Example for reorder_opts but retaining short contigs:
 
 	create_web(
 		files, ref,
@@ -165,7 +165,7 @@ NOTE: if a hit for any position within a contig cannot be found, the whole conti
 
 If the query genome is very distant to the reference (i.e. no regions of homology - very unlikely), contig disposal can be completely turned off if reorder is set to False to prevent any sorting, but the resulting plot will have very few or no connections at all.
 
-###Adding Annotations to the Plot
+##Adding Annotations to the Plot
 	
 	import genomeweb as gw
 	import svgutils.transform as sg
@@ -174,7 +174,7 @@ If the query genome is very distant to the reference (i.e. no regions of homolog
 	fig.append(sg.TextElement(0, 20, 'A', size=12))
 	fig.save('figure.svg')
 
-###Creating Multi-panel Figures
+##Creating Multi-panel Figures
 
 	# "width" is the final size with both panels (1000 for two adjacent 500px panels)
 	# "x" is the x anchor point for the panel
