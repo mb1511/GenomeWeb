@@ -78,14 +78,14 @@ kw = dict(
     bezier_max_n=9)
 
 # multi-panel figure 
-gw.create_web(genome_array[:4], label_names=names[:4], **kw)
-gw.create_web(genome_array[4:9], label_names=names[4:9], x=ssize, append=True, **kw)
-gw.create_web(genome_array[9:18], label_names=names[9:18], x=0, y=ssize, append=True, **kw)
-fig = gw.create_web(genome_array[18:], label_names=names[18:], x=ssize, y=ssize, append=True, **kw)
+gw.create_web(files[:4], label_names=names[:4], **kw)
+gw.create_web(files[4:9], label_names=names[4:9], x=ssize, append=True, **kw)
+gw.create_web(files[9:18], label_names=names[9:18], x=0, y=ssize, append=True, **kw)
+fig = gw.create_web(files[18:], label_names=names[18:], x=ssize, y=ssize, append=True, **kw)
 
 # add annotations
 fig.append(sg.TextElement(0, 20, 'Species 1', size=12, font='Arial', weight='bold'))
-fig.append(sg.TextElement(250, 20, 'Species 2 and 3', size=12, font='Arial', weight='bold'))
-fig.append(sg.TextElement(0, 270, 'Species 4', size=12, font='Arial', weight='bold'))
-fig.append(sg.TextElement(250, 270, 'Species 5', size=12, font='Arial', weight='bold'))
+fig.append(sg.TextElement(ssize, 20, 'Species 2 and 3', size=12, font='Arial', weight='bold'))
+fig.append(sg.TextElement(0, ssize + 20, 'Species 4', size=12, font='Arial', weight='bold'))
+fig.append(sg.TextElement(ssize, ssize + 20, 'Species 5', size=12, font='Arial', weight='bold'))
 fig.save('multi_panel.svg')
