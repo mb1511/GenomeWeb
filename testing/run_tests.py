@@ -18,6 +18,7 @@ def test(func, i):
     return e
 
 opts = dict(
+    working_directory='scratch',
     matches_opts=dict(
         quiet=True),
     reorder_opts=dict(
