@@ -40,7 +40,7 @@ On any platform:
 			'genome1.fna',
 			'genome2.fna',
 			'genome3.fna'],		# can be a list of arbitrary length
-		'reference_genome.fna',	# can be any genome (only necessary when re-indexing)
+		'reference_genome.fna',		# can be any genome (only necessary when re-indexing)
 		**options)			# see list of available options below
 
 If BLAST cannot be found on the system path, set it explicitly before running:
