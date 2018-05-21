@@ -6,7 +6,7 @@ A Python script to create Genomic Webs based on percentage identity.
 
 ## Installation
 
-Requires Python 2.7. Working on a 3.6-compatible version.
+Requires Python 2.7 or 3.x. Originally built in 2.7, but have added 3.x compatibility. Tested with 2.7 and 3.6.
 
 Download and install BLAST from <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+> (tested with blast-2.7.1+)
 
