@@ -6,13 +6,13 @@ Updated 19DEC2016
 @contact: mb1511@bristol.ac.uk
 @summary: Module to handle reading of FASTA files
 '''
-
+from __future__ import print_function
+from builtins import str, range
 import re
-from string import maketrans
 from collections import deque
 
-TRANS_TABLE = maketrans('ATCG', 'TAGC')
-RNA_TRANS_TABLE = maketrans('AUCG', 'UAGC')
+TRANS_TABLE = str.maketrans('ATCG', 'TAGC')
+RNA_TRANS_TABLE = str.maketrans('AUCG', 'UAGC')
 
 
 class Codons(object):
@@ -114,9 +114,9 @@ class Sequence(object):
         if self._complement:
             return self._complement
         if self.seq_type == 'dna':
-            self._complement = self.seq.translate(TRANS_TABLE)
+            self._complement = str(self.seq).translate(TRANS_TABLE)
         elif self.seq_type == 'rna':
-            self._complement = self.seq.translate(RNA_TRANS_TABLE)
+            self._complement = str(self.seq).translate(RNA_TRANS_TABLE)
         else:
             return 'N/A'
         return self._complement
@@ -135,7 +135,7 @@ class Sequence(object):
         if self._ruler:
             return self._ruler
         else:
-            mark = ("''''|''''|" for _ in xrange(1, len(self), 10))
+            mark = ("''''|''''|" for _ in range(1, len(self), 10))
             self._ruler = ''.join(mark)
             return self._ruler
         
@@ -174,7 +174,7 @@ def __fasta_read_from_file(file_path):
                         break
                 
                     while '>' not in line:
-                        seq += line.translate(None, '\n\r \t')
+                        seq += line.replace(' ', '').replace('\n', '').replace('\r', '')
                         try:
                             line = next(s)
                         except StopIteration:
@@ -193,7 +193,6 @@ def __fasta_read_from_file(file_path):
 
 def __fasta_read_from_text(text):
     '''generator function that reads text and yields sequence objects'''
-    
     s = (x.group(0) for x in re.finditer('(.*\n|.+$)', text))
     try:
         i = 0
@@ -212,7 +211,7 @@ def __fasta_read_from_text(text):
                 break
         
             while '>' not in line:
-                seq += line.translate(None, '\n\r \t')
+                seq += line.replace(' ', '').replace('\n', '').replace('\r', '')
                 try:
                     line = next(s)
                 except StopIteration:
@@ -233,7 +232,7 @@ def format_lines(seq, width=200, frames=[1,], ruler=True):
     #rev = seq.reverse
     #rcm = seq.reverse_complement
     frm = [seq.translate(i) for i in frames]
-    for i in xrange(0, len(seq), width):
+    for i in range(0, len(seq), width):
         if ruler:
             yield r[i:i + width] + ('    %d' % (i+width)).rjust(14)
         yield seq.seq[i:i + width]
@@ -266,9 +265,9 @@ if __name__ == '__main__':
     seqs = fasta_read('fnn.faa')
         
     for i in seqs:
-        print i.name
-        print i.seq
-        print i.strain
+        print(i.name)
+        print(i.seq)
+        print(i.strain)
         break
 
 

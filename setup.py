@@ -13,7 +13,7 @@ setup(
     long_description=readme(),
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python',
         'Topic :: Scientific/Engineering :: Information Analysis',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering',
@@ -23,6 +23,6 @@ setup(
     author_email='mb1511@bristol.ac.uk',
     license='GPLv3',
     packages=['genomeweb', 'genomeweb/blast'],
-    install_requires=['numpy', 'colorcet', 'svgwrite'],
+    install_requires=['numpy', 'colorcet', 'svgwrite', 'svgutils'],
     zip_safe=False)
 

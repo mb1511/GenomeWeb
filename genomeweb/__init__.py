@@ -5,8 +5,8 @@ Created on 6 Feb 2017
 '''
 
 from __future__ import print_function
-
-from pyveplot2 import Hiveplot, Axis, Node
+from builtins import range
+from genomeweb.pyveplot2 import Hiveplot, Axis, Node
 import svgwrite as sw
 import svgutils as su
 import re
@@ -14,9 +14,9 @@ from os.path import basename, splitext, join, exists
 import numpy as np
 import colorcet as cc
 
-import fasta
-from blast import local_blast
-import reorderctgs
+from genomeweb import fasta, reorderctgs
+from genomeweb.blast import local_blast
+#import reorderctgs
 
 def _get_props(gene_name):
     p = dict([ x.split('=') for x in re.findall('(?<=\[)(.*?)(?=\])', gene_name) if len(x.split('=')) == 2 ])
@@ -43,7 +43,7 @@ def _get_loc(props):
 
 def _get_matches(
         n1, n2, chunk=2000, step=5000, pid_cov=90, hit_len=1500,
-        short_ctgs=False, shortck=30, shortsp=100, wd=''):
+        short_ctgs=False, shortck=30, shortsp=100, wd='', quiet=False):
     
     # should return ctg num and match posistion for n1 and n2
     # split genome into bits
@@ -67,7 +67,7 @@ def _get_matches(
                 ck = chunk
                 sp = step
             
-            for i in xrange(0, len(ctg), sp):  #chunk
+            for i in range(0, len(ctg), sp):  #chunk
                 if i + ck <= len(ctg):
                     seq = ctg[i : i + ck]
                     name = re.sub('[\n\r]', '', ctg.name)
@@ -108,7 +108,8 @@ def _get_matches(
             mr=0, mev=10000,
             outfmt='details', join_hsps=False,
             b_type='blastn', r_a=True,
-            num_threads=4,task='blastn-short')
+            num_threads=4,task='blastn-short',
+            quiet=quiet)
         if full:
             local_blast.run(
                 join(wd, 'nuc_2.fna'),
@@ -118,7 +119,8 @@ def _get_matches(
                 mr=0, mev=10000,
                 outfmt='details', join_hsps=False,
                 b_type='blastn', r_a=True,
-                num_threads=4, max_hsps=4, make_db=False)
+                num_threads=4, max_hsps=4, make_db=False,
+                quiet=quiet)
         else:
             with open(join(wd, 'temp_blast_2.xml'), 'w') as fbx:
                 # clear file contents
@@ -149,7 +151,8 @@ def _get_matches(
                 mr=0, mev=10000,
                 outfmt='details', join_hsps=False,
                 b_type='blastn', r_a=True,
-                blast_run=False, make_db=False)
+                blast_run=False, make_db=False,
+                quiet=quiet)
     
     else:
         itrs = local_blast.run(
@@ -161,9 +164,10 @@ def _get_matches(
             outfmt='details', join_hsps=False,
             db_type='nucl',
             b_type='blastn', r_a=True,
-            num_threads=4, max_hsps=4)
-    
-    print('BLAST Search Complete.')    
+            num_threads=4, max_hsps=4,
+            quiet=quiet)
+    if not quiet:
+        print('BLAST Search Complete.')    
     
     for alns in itrs:
         for hit in alns:
@@ -206,7 +210,7 @@ def create_web(
         reorder_opts=dict(),
         matches_opts=dict(),
         svg_opts=dict(),
-        append=False):
+        append=False, quiet=False):
     '''
     Create Gemoic Comparison Web
     
@@ -307,15 +311,16 @@ number of references and query genomes.'
         
     if include_reference:
         genome_array.append(reference_genome)
-    
-    print('Number of Genomes: ', len(genome_array))
+    if not quiet:
+        print('Number of Genomes: ', len(genome_array))
     
     if isinstance(reference_genome, (list, tuple)):
         if '' not in reference_genome:
             unq = len(set(reference_genome))
         else:
             unq = len(set(reference_genome)) - 1
-        print('Number of unique reference genomes: %d' % unq)
+        if not quiet:
+            print('Number of unique reference genomes: %d' % unq)
             
     
     # ======== Setup and Check Geometry ========
@@ -400,7 +405,7 @@ resulting output. Decrease radii percentages to below 100 total.'
     positions = []
     theta = (2 * np.pi)/len(genome_array)
     i_theta = np.deg2rad(rotation)
-    for i in xrange(len(genome_array)):
+    for i in range(len(genome_array)):
         angle = i_theta + theta * i
         positions.append((
             (
@@ -488,16 +493,18 @@ resulting output. Decrease radii percentages to below 100 total.'
                 offset=label_offset, font=font)
     
     # ======== Save and write svg ========
-    print('Total number of connections: ', n_paths)
-    if append:
-        print('Saving and merging files...')
-    else:
-        print('Saving %s...' % out_file)
+    if not quiet:
+        print('Total number of connections: ', n_paths)
+        if append:
+            print('Saving and merging files...')
+        else:
+            print('Saving %s...' % out_file)
     hive.save()
     if append:
         template.append(su.transform.fromfile(out_file))
         template.save(out_file)
     else:
         template = su.transform.fromfile(out_file)
-    print('Finished.')
+    if not quiet:
+        print('Finished.')
     return template

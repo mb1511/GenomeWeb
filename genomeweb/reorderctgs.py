@@ -7,11 +7,11 @@ Created on 15 May 2018
 @summary:
 '''
 from __future__ import print_function
-
+from builtins import range
 import re
 
-import fasta
-from blast import local_blast
+from genomeweb import fasta
+from genomeweb.blast import local_blast
 from os.path import join
 
 def _get_props(gene_name):
@@ -67,7 +67,7 @@ def run(
                 ck = chunk
                 sp = step
             
-            for i in xrange(0, len(ctg), sp):  #chunk
+            for i in range(0, len(ctg), sp):  #chunk
                 if i + ck <= len(ctg):
                     seq = ctg[i : i + ck]
                     name = re.sub('[\n\r]', '', ctg.name)
@@ -176,7 +176,7 @@ def run(
         bin_width = 50000
         bin_bounds = range(0, 10000000, bin_width)
         bins = [0 for _ in bin_bounds]
-        for i in xrange(n):
+        for i in range(n):
             if i:
                 s = sum(float(x[i]) for x in lst)
                 out.append(int(s/tot))
@@ -188,7 +188,7 @@ def run(
                         if r >= b and r < b + bin_width:
                             bins[bi] += 1
                             break
-                out.append(bin_bounds[max(xrange(len(bins)), key=lambda x: bins[x])])               
+                out.append(bin_bounds[max(range(len(bins)), key=lambda x: bins[x])])               
         return tuple(out)
     
     ctg_pos = {}
@@ -238,6 +238,11 @@ def run(
                 w.write(n1[i[0]].reverse_complement + '\n')
             else:
                 w.write(n1[i[0]].seq + '\n')
-    print('Contig reorder complete. Output file: %s.' % order_out)
+    if 'quiet' in kw:
+        quiet = kw['quiet']
+    else:
+        quiet = False
+    if not quiet:   
+        print('Contig reorder complete. Output file: %s.' % order_out)
     return(order_out)
     

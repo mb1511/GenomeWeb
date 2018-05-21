@@ -8,8 +8,8 @@ Created on 11 Jun 2016
 from __future__ import print_function 
 
 import subprocess as sp
-import read
 import os
+from genomeweb.blast import read
 
 BLAST_PATH = ''
 
@@ -22,7 +22,7 @@ def run(db=None, db_path='',
         out = '-', 
         mev=0.001, mr=0, join_hsps=False, b_type='blastp', 
         make_db=True, db_type=None, outfmt='clustal',
-        blast_run=True, r_a=False, *args, **kwargs):
+        blast_run=True, r_a=False, quiet=False, *args, **kwargs):
     u'''
     Local BLAST
     
@@ -93,8 +93,9 @@ def run(db=None, db_path='',
                        '-parse_seqids','-dbtype', db_type],
                        stdout=sp.PIPE, stderr=sp.PIPE)
         o, e = mdp.communicate()
-        print(o)
-        print(e)
+        if not quiet:
+            print(o)
+            print(e)
     
     add_args = []
     for arg in args:
@@ -104,8 +105,9 @@ def run(db=None, db_path='',
     
     # perform BLAST using blast exe
     if blast_run:
-        # will just return what ever is in the temp_blast.xml if False        
-        print('Running BLAST: %s' % blast)
+        # will just return what ever is in the temp_blast.xml if False  
+        if not quiet:      
+            print('Running BLAST: %s' % blast)
         _o = sp.Popen([blast, '-query', query,
                        '-db', db_path, '-out', out, '-outfmt', '5']
                       + add_args, stdout=sp.PIPE, stderr=sp.STDOUT)

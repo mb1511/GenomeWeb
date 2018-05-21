@@ -6,9 +6,13 @@ Created on 2 Sep 2016
 Module to quickly read BLAST xml outputs
 '''
 from __future__ import print_function
-
+from builtins import str, range
 import re
 import mmap
+
+import time
+read_time = 0
+i_time = time.time()
 
 class _make_class:
     def __init__(self, dct):
@@ -112,10 +116,8 @@ def _read(tag, search_space):
     #if len(data) > 1:
     #    del data[-1]
     #return data
-    
     for i, d in enumerate(re.split( ('<%s>|</%s>' % (tag, tag)), search_space)):
-        x = d.translate(None, ' ')
-        x = x.strip()
+        x = d.replace(' ', '').strip()
         if d == ' ' or x == '\n' or i == 0 or x == '\r' or x == '':
             continue
         else:
@@ -292,7 +294,7 @@ def _format(s1, s2=None, m=None, num_pl = 60, pad=0, det=False,
     
     qx, qy, hx, hy = 0, int(qf)-1, 0, int(hf)-1
     
-    for i in xrange(0, len(s1), num_pl):
+    for i in range(0, len(s1), num_pl):
         
         l1_s1 = s1[ i : i + num_pl ]
         l1_line =  l1_s1.ljust(num_pl + pad).rjust(num_pl + 2*pad) 

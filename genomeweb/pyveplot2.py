@@ -33,7 +33,7 @@ Change Notes:
     - Gave classes a simple __repr__
     - Applied PEP8 and some stylistic tweaks (subjective)
 """
-
+from builtins import super
 from svgwrite import cm, mm, Drawing
 from math import sin, cos, atan2, degrees, radians, tan, sqrt, pi
 
@@ -43,7 +43,7 @@ class Hiveplot(Drawing):
     """
 
     def __init__(self, *a, **kw):
-        super(Hiveplot, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.axes  = []
     
     def __repr__(self):
@@ -126,7 +126,7 @@ class Hiveplot(Drawing):
         # add any remaining axis elements before saving
         for axis in self.axes:
             self.add(axis())
-        super(Hiveplot, self).save()
+        super().save()
         
 class Axis(Drawing):
     """
@@ -142,7 +142,7 @@ class Axis(Drawing):
     """
     
     def __init__(self, start=(0, 0), end=(0, 0), **kwargs):
-        super(Axis, self).__init__()
+        super().__init__()
         self.start = start
         self.end = end
         self.nodes = []
@@ -209,7 +209,7 @@ class Node(Drawing):
     ID: a unique key for the nodes dict of an axis.  
     """
     def __init__(self, ID='', draw_label=False, *a, **kw):
-        super(Node, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.ID = ID
         self.x = 0
         self.y = 0
