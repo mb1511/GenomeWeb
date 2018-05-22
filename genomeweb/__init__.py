@@ -43,7 +43,8 @@ def _get_loc(props):
 
 def _get_matches(
         n1, n2, chunk=2000, step=5000, pid_cov=90, hit_len=1500,
-        short_ctgs=False, shortck=30, shortsp=100, wd='', quiet=False):
+        short_ctgs=False, shortck=30, shortsp=100, wd='',
+        l_max_hsps=4, quiet=False, **kw):
     
     # should return ctg num and match posistion for n1 and n2
     # split genome into bits
@@ -98,6 +99,33 @@ def _get_matches(
             ws_2.append(len(ctg))
             nams2.append(ctg.name[1:ctg.name.find(' ')])
     
+    # set blast defaults - can be overwritten in **kw
+    short_defaults = dict(
+        mr=0, mev=10000,
+        join_hsps=False,
+        b_type='blastn',
+        r_a=True,
+        num_threads=4,
+        quiet=quiet)
+    short_defaults.update(kw)
+    
+    if 'max_hsps' in kw:
+        del kw['max_hsps']
+    
+    long_defaults = dict(make_db=False)
+    
+    defaults = dict(
+        mr=0, mev=10000,
+        join_hsps=False,
+        b_type='blastn',
+        r_a=True,
+        num_threads=4,
+        max_hsps=l_max_hsps,
+        quiet=quiet)
+    
+    defaults.update(kw)
+    long_defaults.update(defaults)
+    
     if short:
     
         local_blast.run(
@@ -105,22 +133,16 @@ def _get_matches(
             db_path=join(wd, 'db.fna'),
             query=join(wd, 'nuc_short.fna'),
             out=join(wd, 'temp_blast_1.xml'),
-            mr=0, mev=10000,
-            outfmt='details', join_hsps=False,
-            b_type='blastn', r_a=True,
-            num_threads=4,task='blastn-short',
-            quiet=quiet)
+            outfmt='details', task='blastn-short',
+            **short_defaults)
         if full:
             local_blast.run(
                 join(wd, 'nuc_2.fna'),
                 db_path=join(wd, 'db.fna'),
                 query=join(wd, 'nuc_1.fna'),
                 out=join(wd, 'temp_blast_2.xml'),
-                mr=0, mev=10000,
-                outfmt='details', join_hsps=False,
-                b_type='blastn', r_a=True,
-                num_threads=4, max_hsps=4, make_db=False,
-                quiet=quiet)
+                outfmt='details',
+                **long_defaults)
         else:
             with open(join(wd, 'temp_blast_2.xml'), 'w') as fbx:
                 # clear file contents
@@ -160,12 +182,8 @@ def _get_matches(
             db_path=join(wd, 'db.fna'),
             query=join(wd, 'nuc_1.fna'),
             out=join(wd, 'temp_blast.xml'),
-            mr=0, mev=10000,
-            outfmt='details', join_hsps=False,
-            db_type='nucl',
-            b_type='blastn', r_a=True,
-            num_threads=4, max_hsps=4,
-            quiet=quiet)
+            outfmt='details',
+            **defaults)
     if not quiet:
         print('BLAST Search Complete.')    
     

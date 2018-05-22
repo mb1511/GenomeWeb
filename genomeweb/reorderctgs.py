@@ -39,7 +39,7 @@ def _get_loc(props):
 
 def run(
         query, reference, chunk=1000, step=2000, order_out='order_out.fna',
-        wd='', run_short=True, shortck=30, shortsp=100, **kw):
+        wd='', run_short=True, shortck=30, shortsp=100, l_max_hsps=4, **kw):
     '''
     TODO: add doc string
     '''
@@ -98,6 +98,31 @@ def run(
             ws_2.append(len(ctg))
             nams2.append(ctg.name[1:ctg.name.find(' ')])
     
+    # set blast defaults - can be overwritten in **kw
+    short_defaults = dict(
+        mr=0, mev=10000,
+        join_hsps=False,
+        b_type='blastn',
+        r_a=True,
+        num_threads=4)
+    short_defaults.update(kw)
+    
+    if 'max_hsps' in kw:
+        del kw['max_hsps']
+    
+    long_defaults = dict(make_db=False)
+    
+    defaults = dict(
+        mr=0, mev=10000,
+        join_hsps=False,
+        b_type='blastn',
+        r_a=True,
+        num_threads=4,
+        max_hsps=l_max_hsps)
+    
+    defaults.update(kw)
+    long_defaults.update(defaults)
+    
     if short:
     
         local_blast.run(
@@ -105,26 +130,18 @@ def run(
             db_path=join(wd, 'db.fna'),
             query=join(wd, 'nuc_short.fna'),
             out=join(wd, 'temp_blast_1.xml'),
-            mr=0, mev=10000,
-            outfmt='details', join_hsps=False,
-            b_type='blastn', r_a=True,
-            num_threads=4,task='blastn-short', **kw)
-        #, blast_run=False, make_db=False)
+            outfmt='details', task='blastn-short',
+            **short_defaults)
         if full:
-            if 'make_db' in kw:
-                del kw['make_db']
             local_blast.run(
                 join(wd, 'nuc_2.fna'),
                 db_path=join(wd, 'db.fna'),
                 query=join(wd, 'nuc_1.fna'),
                 out=join(wd, 'temp_blast_2.xml'),
-                mr=0, mev=10000,
-                outfmt='details', join_hsps=False,
-                b_type='blastn', r_a=True,
-                num_threads=4, max_hsps=4, make_db=False, **kw)
-            #, blast_run=False, make_db=False)
+                outfmt='details',
+                **long_defaults)
         else:
-            with open('src/tools/blast/temp_blast_2.xml', 'w') as fbx:
+            with open(join(wd, 'temp_blast_2.xml'), 'w') as fbx:
                 # clear file contents
                 fbx.write('')
             
@@ -145,8 +162,6 @@ def run(
                     read_line = True
                     o.write(line)
             # read concatenated xml output but don't run
-            if 'make_db' in kw:
-                del kw['make_db']
             itrs = local_blast.run(
                 join(wd, 'nuc_2.fna'),
                 query=join(wd, 'nuc_1.fna'),
@@ -162,11 +177,8 @@ def run(
             db_path=join(wd, 'db.fna'),
             query=join(wd, 'nuc_1.fna'),
             out=join(wd, 'temp_blast.xml'),
-            mr=0, mev=10000,
-            outfmt='details', join_hsps=False,
-            db_type='nucl',
-            b_type='blastn', r_a=True,
-            num_threads=4, max_hsps=4, **kw)
+            outfmt='details',
+            **defaults)
     
     
     def _avg(lst):
