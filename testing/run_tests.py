@@ -4,6 +4,15 @@ import sys
 import genomeweb as gw
 
 files = [f for f in glob.glob('genomes/*.fna')]
+if len(sys.argv) > 1:
+    if sys.argv[1] == '-v':
+        quiet = False
+    else:
+        print('Unkown argument: %s' % sys.argv[1])
+        print('Use "-v" for verbose output.')
+        sys.exit(1)
+else:
+    quiet = True
 
 def test(func, i):
     pf = 'Fail'
@@ -20,10 +29,10 @@ def test(func, i):
 opts = dict(
     working_directory='scratch',
     matches_opts=dict(
-        quiet=True),
+        quiet=quiet),
     reorder_opts=dict(
-        quiet=True),
-    quiet=True
+        quiet=quiet),
+    quiet=quiet
     )
 # TODO: update tests
 tests = [
