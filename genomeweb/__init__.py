@@ -348,7 +348,7 @@ resulting output. Decrease radii percentages to below 100 total.'
     if not label_names:
         names = [splitext(basename(g))[0] for g in genome_array]
     else:
-        assert len(label_names) == len(genome_array), 'Number of labels\
+        assert len(label_names) >= len(genome_array), 'Number of labels\
  does not match number of genomes.'
         names = label_names
     
@@ -403,9 +403,13 @@ resulting output. Decrease radii percentages to below 100 total.'
     
     # axis geometry
     positions = []
-    theta = (2 * np.pi)/len(genome_array)
+    if genome_array:
+        n_axes = len(genome_array)
+    else:
+        n_axes = len(label_names)
+    theta = (2 * np.pi)/n_axes
     i_theta = np.deg2rad(rotation)
-    for i in range(len(genome_array)):
+    for i in range(n_axes):
         angle = i_theta + theta * i
         positions.append((
             (
