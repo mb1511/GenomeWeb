@@ -16,8 +16,8 @@ A Python script to create Genomic Webs based on percentage identity.
 	* [BLAST+ Search Options](https://github.com/mb1511/GenomeWeb#blast-search-options)
 	* [Additional Options](https://github.com/mb1511/GenomeWeb#additional-options-likely-do-not-need-to-be-altered)
 	* [Adding Annotations](https://github.com/mb1511/GenomeWeb#adding-annotations-to-the-plot)
-	
-* [Creating Multi-panel Figures](https://github.com/mb1511/GenomeWeb#creating-multi-panel-figures)
+	* [Creating Multi-panel Figures](https://github.com/mb1511/GenomeWeb#creating-multi-panel-figures)
+
 * [Citations](https://github.com/mb1511/GenomeWeb#citations)
 * [Other Notes](https://github.com/mb1511/GenomeWeb#other-notes)
 * [Examples](https://github.com/mb1511/GenomeWeb#other-notes)
