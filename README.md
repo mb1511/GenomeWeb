@@ -185,7 +185,58 @@ If the query genome is very distant to the reference (i.e. no regions of homolog
 	# add second panel at 500,0
 	gw.create_web(genome_list2, x=500, append=True, **options)
 	
+### BLAST+ Search Options
+
+For advanced users who wish to alter the default BLAST search options, command line options can be parsed directly to BLAST via key-word arguments in the `matches_opts` and `reorder_opts` dictionaries. For example:
 	
+	gw.create_web(
+		files, ref,
+		matches_opts=dict(
+			word_size=15))		# appends "-word_size 15" to blast command
+
+To run megablast, dicontiguous megablast or blastn, use option `task=` either `megablast`, `dc-megablast` or `blastn`. Default is `blastn`.
+
+Below is a list of arguments that can be parsed to blastn. Do not alter `query`, `db`, `out`, `outfmt` or `subject`. The database path (`db`) can however be modified using the `db_path="path"` argument with `make_db=False`. This will then not automatically create a blast database, but will use the one specified. This is probably useless for the `matches_opts` as currenty only one custom database can be specified. It is intended for use in the `reorder_opts`, though this will also limit the user to one reference genome.
+
+The number of threads to run blast on can be set using the `num_threads=int` option. Default is 4, though it will likely not fully leverage these over the short runtime.
+
+To edit `-max_hsps` for full-length searches (not short-contig searching) use the `l_max_hsps=` option; default is 4. To edit this for short-contigs, just add `max_hsps=val`; default is not to include this and return all possible hsps.
+
+For positional arguments with no value, e.g. `-lcase_masking` use `lcase_masking=True` to add the argument. In this instance, lower-case basepairs (typically low confidence sequences) are masked in the query and subject sequences .
+
+Options for blastn:
+
+	  blastn [-h] [-help] [-import_search_strategy filename]
+	    [-export_search_strategy filename] [-task task_name] [-db database_name]
+	    [-dbsize num_letters] [-gilist filename] [-seqidlist filename]
+	    [-negative_gilist filename] [-entrez_query entrez_query]
+	    [-db_soft_mask filtering_algorithm] [-db_hard_mask filtering_algorithm]
+	    [-subject subject_input_file] [-subject_loc range] [-query input_file]
+	    [-out output_file] [-evalue evalue] [-word_size int_value]
+	    [-gapopen open_penalty] [-gapextend extend_penalty]
+	    [-perc_identity float_value] [-qcov_hsp_perc float_value]
+	    [-max_hsps int_value] [-xdrop_ungap float_value] [-xdrop_gap float_value]
+	    [-xdrop_gap_final float_value] [-searchsp int_value]
+	    [-sum_stats bool_value] [-penalty penalty] [-reward reward] [-no_greedy]
+	    [-min_raw_gapped_score int_value] [-template_type type]
+	    [-template_length int_value] [-dust DUST_options]
+	    [-filtering_db filtering_database]
+	    [-window_masker_taxid window_masker_taxid]
+	    [-window_masker_db window_masker_db] [-soft_masking soft_masking]
+	    [-ungapped] [-culling_limit int_value] [-best_hit_overhang float_value]
+	    [-best_hit_score_edge float_value] [-window_size int_value]
+	    [-off_diagonal_range int_value] [-use_index boolean] [-index_name string]
+	    [-lcase_masking] [-query_loc range] [-strand strand] [-parse_deflines]
+	    [-outfmt format] [-show_gis] [-num_descriptions int_value]
+	    [-num_alignments int_value] [-line_length line_length] [-html]
+	    [-max_target_seqs num_sequences] [-num_threads int_value] [-remote]
+	    [-version]
+
+See [NCBI](https://www.ncbi.nlm.nih.gov/books/NBK279668/) for BLAST+ manual and [here](https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a) for all command line options explained. Use only if there is a good reason, otherwise defaults should work fine.
+
+`-perc_identity val` (in BLAST) filtering will effectively be overriden by the `pid_cov` value (in match filtering post-blast) if `pid_cov > perc_identity`.
+
+Theoretically, the blast protocol can be altered to use a different blast type by adding the `b_type=` argument: `"blastp"`, `"psiblast"`, `"deltablast"` or `"tblastx"` for protein sequences also adding the `db_type="prot"` argument to correctly make the databases. Cross-molecule searches are not supported: `"tblastn"` or `"blastx"`. CAUTION: this is not tested.
 
 ## Citations
 

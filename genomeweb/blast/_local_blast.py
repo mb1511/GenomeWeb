@@ -101,7 +101,11 @@ def run(db=None, db_path='',
     for arg in args:
         add_args.append('-' + str(arg))
     for key in kwargs.keys():
-        add_args.extend(['-' + str(key), str(kwargs[key])])
+        if isinstance(kwargs[key], bool):
+            if kwargs[key]:
+                add_args.append('-' + str(key))
+        else:
+            add_args.extend(['-' + str(key), str(kwargs[key])])
     
     # perform BLAST using blast exe
     if blast_run:

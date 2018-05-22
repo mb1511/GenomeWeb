@@ -107,6 +107,10 @@ def run(
         r_a=True,
         num_threads=4)
     short_defaults.update(kw)
+    if short_defaults['b_type'] == 'blastn':
+        short_defaults.update(dict(task='blastn-short'))
+    elif short_defaults['b_type'] == 'blastp':
+        short_defaults.update(dict(task='blastp-short'))
     
     if 'max_hsps' in kw:
         del kw['max_hsps']
@@ -131,7 +135,7 @@ def run(
             join(wd, 'nuc_2.fna'),
             query=join(wd, 'nuc_short.fna'),
             out=join(wd, 'temp_blast_1.xml'),
-            outfmt='details', task='blastn-short',
+            outfmt='details',
             **short_defaults)
         if full:
             local_blast.run(
