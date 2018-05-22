@@ -4,6 +4,24 @@
 
 A Python script to create Genomic Webs based on percentage identity.
 
+## Contents
+
+* [Installation](https://github.com/mb1511/GenomeWeb#installation)
+* [Usage](https://github.com/mb1511/GenomeWeb#usage)
+	* [Necessary Arguments](https://github.com/mb1511/GenomeWeb#necessary-arguments)
+	* [Standard Options](https://github.com/mb1511/GenomeWeb#standard-options)
+	* [Basic Geometry Options](https://github.com/mb1511/GenomeWeb#basic-geometry-options)
+	* [Mulit-panel Geometry Options](https://github.com/mb1511/GenomeWeb#mulit-panel-geometry-options)
+	* [Advanced Options](https://github.com/mb1511/GenomeWeb#advanced-options)
+	* [BLAST+ Search Options](https://github.com/mb1511/GenomeWeb#blast-search-options)
+	* [Additional Options](https://github.com/mb1511/GenomeWeb#additional-options-likely-do-not-need-to-be-altered)
+	* [Adding Annotations](https://github.com/mb1511/GenomeWeb#adding-annotations-to-the-plot)
+	
+* [Creating Multi-panel Figures](https://github.com/mb1511/GenomeWeb#creating-multi-panel-figures)
+* [Citations](https://github.com/mb1511/GenomeWeb#citations)
+* [Other Notes](https://github.com/mb1511/GenomeWeb#other-notes)
+* [Examples](https://github.com/mb1511/GenomeWeb#other-notes)
+
 ## Installation
 
 Requires Python 2.7 or 3.x. Originally built in 2.7, but have added 3.x compatibility. Tested with 2.7 and 3.6.
