@@ -100,6 +100,7 @@ def run(
     
     # set blast defaults - can be overwritten in **kw
     short_defaults = dict(
+        db_path=join(wd, 'db.fna'),
         mr=0, mev=10000,
         join_hsps=False,
         b_type='blastn',
@@ -113,6 +114,7 @@ def run(
     long_defaults = dict(make_db=False)
     
     defaults = dict(
+        db_path=join(wd, 'db.fna'),
         mr=0, mev=10000,
         join_hsps=False,
         b_type='blastn',
@@ -127,7 +129,6 @@ def run(
     
         local_blast.run(
             join(wd, 'nuc_2.fna'),
-            db_path=join(wd, 'db.fna'),
             query=join(wd, 'nuc_short.fna'),
             out=join(wd, 'temp_blast_1.xml'),
             outfmt='details', task='blastn-short',
@@ -135,7 +136,6 @@ def run(
         if full:
             local_blast.run(
                 join(wd, 'nuc_2.fna'),
-                db_path=join(wd, 'db.fna'),
                 query=join(wd, 'nuc_1.fna'),
                 out=join(wd, 'temp_blast_2.xml'),
                 outfmt='details',
@@ -174,7 +174,6 @@ def run(
     else:
         itrs = local_blast.run(
             db=join(wd, 'nuc_2.fna'),
-            db_path=join(wd, 'db.fna'),
             query=join(wd, 'nuc_1.fna'),
             out=join(wd, 'temp_blast.xml'),
             outfmt='details',
