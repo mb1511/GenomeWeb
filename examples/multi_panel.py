@@ -1,8 +1,8 @@
 '''
 Multi-Panel Example
 '''
-import glob
-from os.path import basename, exists, join, splitext
+
+from os.path import exists
 import genomeweb as gw
 import svgutils.transform as sg
 
@@ -35,40 +35,18 @@ names = [
     ]
 
 files = [root + f + ext for f in names]
+# make sure files exist
 for f in files:
     assert exists(f),f
-working_directory='scratch'
-
-# re-index contigs outside of plot making
-reference_genome = [
-    'genomes/ref_a.fna', '', '', '',
-    'genomes/ref_b.fna', '', '', '', '',
-    'genomes/ref_c.fna', '', '', '', '', '', '', '', '',
-    'genomes/ref_d.fna', '', '', '', '']
-
-for i, genome in enumerate(files):
-    ref = reference_genome[i]
-    p_ref = reference_genome[-1]
-    if ref:
-        ref_to_use = ref
-    # only make new db for unique/non-empty/initial
-    # genome in referecne list, else use previous entry
-    files[i] = gw.reorderctgs.run(
-        genome, ref_to_use,
-        order_out=join(
-            working_directory,
-            '%s_reorder.fna' % splitext(basename(genome))[0]),
-        make_db=(not i or ref != p_ref) and ref,
-        wd=working_directory)
-
 
 # define panel options
 size = 500
 ssize = size / 2
+
+# common plot options
 kw = dict(
     out_file='multi_panel.svg',
-    working_directory=working_directory,
-    reorder=False,
+    working_directory='scratch',
     outer_radius=45,
     label_offset=1.2,
     width=size,
@@ -78,14 +56,22 @@ kw = dict(
     bezier_max_n=9)
 
 # multi-panel figure 
-gw.create_web(files[:4], label_names=names[:4], **kw)
-gw.create_web(files[4:9], label_names=names[4:9], x=ssize, append=True, **kw)
-gw.create_web(files[9:18], label_names=names[9:18], x=0, y=ssize, append=True, **kw)
-fig = gw.create_web(files[18:], label_names=names[18:], x=ssize, y=ssize, append=True, **kw)
+gw.create_web(
+    files[:4], reference='genomes/ref_a.fna', label_names=names[:4], **kw)
+gw.create_web(
+    files[4:9], reference='genomes/ref_b.fna', label_names=names[4:9],
+    x=ssize, append=True, **kw)
+gw.create_web(
+    files[9:18], reference='genomes/ref_c.fna', label_names=names[9:18],
+    x=0, y=ssize, append=True, **kw)
+fig = gw.create_web(
+    files[18:], reference='genomes/ref_d.fna', label_names=names[18:],
+    x=ssize, y=ssize, append=True, **kw)
 
 # add annotations
-fig.append(sg.TextElement(0, 20, 'Species 1', size=12, font='Arial', weight='bold'))
-fig.append(sg.TextElement(ssize, 20, 'Species 2 and 3', size=12, font='Arial', weight='bold'))
-fig.append(sg.TextElement(0, ssize + 20, 'Species 4', size=12, font='Arial', weight='bold'))
-fig.append(sg.TextElement(ssize, ssize + 20, 'Species 5', size=12, font='Arial', weight='bold'))
+text_opts = dict(size=12, font='Arial', weight='bold')
+fig.append(sg.TextElement(0, 20, 'Species 1', **text_opts))
+fig.append(sg.TextElement(ssize, 20, 'Species 2 and 3', **text_opts))
+fig.append(sg.TextElement(0, ssize + 20, 'Species 4', **text_opts))
+fig.append(sg.TextElement(ssize, ssize + 20, 'Species 5', **text_opts))
 fig.save('multi_panel.svg')
