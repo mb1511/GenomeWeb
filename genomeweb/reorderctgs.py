@@ -107,10 +107,12 @@ def run(
         r_a=True,
         num_threads=4)
     short_defaults.update(kw)
+    
+    # override task for short queries
     if short_defaults['b_type'] == 'blastn':
-        short_defaults.update(dict(task='blastn-short'))
+        short_defaults.update(task='blastn-short')
     elif short_defaults['b_type'] == 'blastp':
-        short_defaults.update(dict(task='blastp-short'))
+        short_defaults.update(task='blastp-short')
     
     if 'max_hsps' in kw:
         del kw['max_hsps']

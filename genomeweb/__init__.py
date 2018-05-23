@@ -109,10 +109,12 @@ def _get_matches(
         num_threads=4,
         quiet=quiet)
     short_defaults.update(kw)
+    
+    # override task for short queries
     if short_defaults['b_type'] == 'blastn':
-        short_defaults.update(dict(task='blastn-short'))
+        short_defaults.update(task='blastn-short')
     elif short_defaults['b_type'] == 'blastp':
-        short_defaults.update(dict(task='blastp-short'))
+        short_defaults.update(task='blastp-short')
     
     if 'max_hsps' in kw:
         del kw['max_hsps']
@@ -244,6 +246,8 @@ def create_web(
     
         reference_genome   str      path to reference to order contigs
                                     by (required if reorder=True)
+        reference_genome   list     list of reference genomes (matched
+                                    against genome_array)
         working_directory  str      path to scratch space for program
                                     to write files
         out_file           str      path to output SVG file
@@ -251,7 +255,10 @@ def create_web(
                                     resulting map                            
         reorder            bool     reorder contigs against reference
         palette            str      color palette to use from 
-                                    colorcet.palette
+                                    colorcet.palette, e.g. "bgy"
+        palette            list     custom palette with list of colors
+                                    to use e.g. ["#000000", "red"]. See
+                                    svgwrite for colors accepted.
         add_labels         bool     add labels to axes
         label_offset       float    label offset, 1.0-1.5 should be
                                     fine, default = 1.1
@@ -341,6 +348,15 @@ number of references and query genomes.'
             unq = len(set(reference_genome)) - 1
         if not quiet:
             print('Number of unique reference genomes: %d' % unq)
+    
+    if isinstance(palette, (list, tuple)):
+        palette_len = len(palette) - 1
+    else:
+        try:
+            palette = cc.palette[palette]
+        except KeyError:
+            raise KeyError('Invalid color palette selection: %.' % palette)
+        palette_len = len(palette) - 1
             
     
     # ======== Setup and Check Geometry ========
@@ -473,8 +489,12 @@ resulting output. Decrease radii percentages to below 100 total.'
     else:
         pid_cov = 90.0
     n_paths = 0
+    curved = False if len(genome_array) > bezier_max_n else True
+    source_angle = np.pi/4
+    target_angle = -np.pi/4
     for i, match in enumerate(matches):
         for node_index, (pos1, ctg1, pos2, ctg2, pid) in enumerate(match):
+            # calculate Node offsets
             sum1 = pos1
             for j, s in enumerate(contig_sizes[i-1]):
                 if j < ctg1:
@@ -492,24 +512,25 @@ resulting output. Decrease radii percentages to below 100 total.'
             # change this depending on color scheme used
             if pid < pid_cov:
                 pid = pid_cov
-            pid = int(255 * palette_usage * (pid - pid_cov) / (100 - pid_cov) )
+            # convert pid into palette index
+            pid = int(palette_len * palette_usage * (pid - pid_cov) / (100 - pid_cov) )
             n_paths += 1
             hive.connect(
-                hive.axes[i-1], node_index, np.pi/4,
-                hive.axes[i], node_index, -np.pi/4,
-                curved=False if len(genome_array) > bezier_max_n else True,
-                stroke=cc.palette[palette][pid],
+                hive.axes[i-1], node_index, source_angle,
+                hive.axes[i], node_index, target_angle,
+                curved=curved,
+                stroke=palette[pid],
                 **connection_opts)
         
-        # Clear node arrays
+        # Clear node arrays as they are not needed anymore
         hive.axes[i-1].nodes = []
         hive.axes[i].nodes = []
     
     # ======== Add Labels to Axes ========
     if not custom_font:
-        font='font-size:%dpx; font-family:%s' % (font_size, font_family)
+        font = 'font-size:%dpx; font-family:%s' % (font_size, font_family)
     else:
-        font=custom_font
+        font = custom_font
     if add_labels:
         for i, g in enumerate(names):
             hive.axes[i].add_node(

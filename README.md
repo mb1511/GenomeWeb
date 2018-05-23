@@ -77,6 +77,8 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
     
         reference_genome   str      path to reference to order contigs
                                     by (required if reorder=True)
+        reference_genome   list     list of reference genomes (matched
+                                    against genome_array)
         working_directory  str      path to scratch space for program
                                     to write files
         out_file           str      path to output SVG file
@@ -84,7 +86,10 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
                                     resulting map                            
         reorder            bool     reorder contigs against reference
         palette            str      color palette to use from 
-                                    colorcet.palette
+                                    colorcet.palette, e.g. "bgy"
+        palette            list     custom palette with list of colors
+                                    to use e.g. ["#000000", "red"]. See
+                                    svgwrite for colors accepted.
         add_labels         bool     add labels to axes
         label_offset       float    label offset, 1.0-1.5 should be
                                     fine, default = 1.1
