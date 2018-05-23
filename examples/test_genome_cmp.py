@@ -28,7 +28,7 @@ gw.create_web(
     working_directory='./scratch',
     out_file='unordered_tri.svg',
     reorder=False,
-    border_offset=25)
+    palette_usage=0.8)
 
 # tri-spoke, with re-indexing
 gw.create_web(
@@ -36,13 +36,12 @@ gw.create_web(
     reference_genome=reference,
     working_directory='./scratch',
     out_file='tri.svg',
-    border_offset=25)
+    palette_usage=0.8)
 
 # 20-spoke, with re-indexing
 gw.create_web(
     files,
     reference_genome=reference,
     working_directory='./scratch',
-    out_file='unordered_tri.svg',
-    border_offset=25)
+    out_file='unordered_tri.svg')
 
