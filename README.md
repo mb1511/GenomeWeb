@@ -12,7 +12,7 @@ A Python script to create Genomic Webs based on percentage identity.
 	* [Standard Options](https://github.com/mb1511/GenomeWeb#standard-options)
 	* [Basic Geometry Options](https://github.com/mb1511/GenomeWeb#basic-geometry-options)
 	* [Multi-panel Geometry Options](https://github.com/mb1511/GenomeWeb#multi-panel-geometry-options)
-	* [Advance Geometry Options](https://github.com/mb1511/GenomeWeb#advanced-geometry-options)
+	* [Advanced Geometry Options](https://github.com/mb1511/GenomeWeb#advanced-geometry-options)
 	* [Color Palette Options](https://github.com/mb1511/GenomeWeb#color-palette-options)
 	* [Advanced Options](https://github.com/mb1511/GenomeWeb#advanced-options)
 	* [BLAST+ Search Options](https://github.com/mb1511/GenomeWeb#blast-search-options)
