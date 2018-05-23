@@ -11,7 +11,9 @@ A Python script to create Genomic Webs based on percentage identity.
 	* [Necessary Arguments](https://github.com/mb1511/GenomeWeb#necessary-arguments)
 	* [Standard Options](https://github.com/mb1511/GenomeWeb#standard-options)
 	* [Basic Geometry Options](https://github.com/mb1511/GenomeWeb#basic-geometry-options)
-	* [Mulit-panel Geometry Options](https://github.com/mb1511/GenomeWeb#mulit-panel-geometry-options)
+	* [Mulit-panel Geometry Options](https://github.com/mb1511/GenomeWeb#multi-panel-geometry-options)
+	* [Advance Geometry Options](https://github.com/mb1511/GenomeWeb#advanced-geometry-options)
+	* [Color Palette Options](https://github.com/mb1511/GenomeWeb#color-palette-options)
 	* [Advanced Options](https://github.com/mb1511/GenomeWeb#advanced-options)
 	* [BLAST+ Search Options](https://github.com/mb1511/GenomeWeb#blast-search-options)
 	* [Additional Options](https://github.com/mb1511/GenomeWeb#additional-options-likely-do-not-need-to-be-altered)
@@ -109,22 +111,36 @@ An `svgutils.transform.SVGFigure` is returned for any annotations to be made pos
         rotation           float    value in degrees to rotate all axes
                                     by (clockwise direction)
                                     
-### Mulit-panel Geometry Options
+### Multi-panel Geometry Options
         
         append             bool     append output to existing SVG,
                                     default to append is out_file
         append             str      file to append
         width              int      width of final SVG in px
         height             int      height of fnial SVG in px
-                        
-### Advanced Options
 
-        palette_usage      float    decimal percent of palette spectrum
-                                    to use
+### Advanced Geometry Options
+    
+        dummy_axes         int      number of spacer axes to insert
+                                    (useful for pairwise comparisons)
         bezier_max_n       int      max number of genomes before
                                     straight lines are used instead of
                                     bezier curves (set to 0 for always
                                     straight)
+        source_angle       float    source angle for bezier curve
+                                    (radians)
+        target_angle       float    target angle for bezier curve
+                                    (radians)
+
+### Color Palette Options
+    
+        palette_usage      float    decimal percent of palette spectrum
+                                    to use
+        invert             bool     invert colors in palette
+        flip               bool     use palette in reverse order
+
+### Advanced Options
+
         custom_font        str      full custom SVG text element for
                                     labels e.g.
                                     "font-size:12px; font-family:Arial;
@@ -277,19 +293,26 @@ The pyveplot2 module is a heavily modified version of [pyveplot](https://github.
 
 See example [script](https://github.com/mb1511/GenomeWeb/blob/master/examples/test_genome_cmp.py) for generation of the following plots:
 
-### Plot with no contig re-indexing:
+### Plot with no contig re-indexing
 
 ![unordered](https://github.com/mb1511/GenomeWeb/blob/master/examples/unordered_tri.svg)
 
-### Plot post contig re-indexing:
+### Plot post contig re-indexing
 
 ![three spoke](https://github.com/mb1511/GenomeWeb/blob/master/examples/tri.svg)
 
-### 20 Just for fun:
+### 20 Just for fun
 
 ![twenty](https://github.com/mb1511/GenomeWeb/blob/master/examples/twenty.svg)
 
-### Multi-panel Example.
+### Multi-panel Example
+
 See [multi_panel.py](https://github.com/mb1511/GenomeWeb/blob/master/examples/multi_panel.py) for source.
 
 ![multi](https://github.com/mb1511/GenomeWeb/blob/master/examples/multi_panel.svg)
+
+### Pairwise Comparison
+
+See [script](https://github.com/mb1511/GenomeWeb/blob/master/examples/test_double.py) for options to create this.
+
+![pair](https://github.com/mb1511/GenomeWeb/blob/master/examples/double.svg)

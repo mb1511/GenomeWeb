@@ -219,8 +219,7 @@ def create_web(
         genome_array=[], reference_genome='',
         working_directory='', out_file='default.svg',
         include_reference=False, reorder=True,
-        palette='bgy', palette_usage=1.0,
-        bezier_max_n=4,
+        palette='bgy', palette_usage=1.0, invert=False, flip=False,
         connection_opts=dict(
             stroke_width='0.34', stroke_opacity='0.4'),
         axes_opts=dict(
@@ -229,6 +228,7 @@ def create_web(
         rotation=0, x=0, y=0, width=None, height=None, viewBox=None,
         label_names=[], add_labels=True, label_offset=1.1,
         font_size=11, font_family='Arial', custom_font=None,
+        bezier_max_n=4, source_angle=None, target_angle=None, dummy_axes=0,
         reorder_opts=dict(),
         matches_opts=dict(),
         svg_opts=dict(),
@@ -270,7 +270,7 @@ def create_web(
                                     (pid_cov) and minimum hit length
                                     (hit_len) for use in filtering hits
                                     
-    Basic geometry options
+    Basic Geometry Gptions
     
         size               int      size of hive plot in px
         x                  int      x origin, default = 0
@@ -278,22 +278,36 @@ def create_web(
         rotation           float    value in degrees to rotate all axes
                                     by (clockwise direction)
                                     
-    Mulit-panel geometry options:
+    Mulit-panel Geometry Options:
         
         append             bool     append output to existing SVG,
                                     default to append is out_file
         append             str      file to append
         width              int      width of final SVG in px
         height             int      height of fnial SVG in px
-                        
-    Advanced Options:
-
-        palette_usage      float    decimal percent of palette spectrum
-                                    to use
+        
+    Advanced Geometry Options:
+    
+        dummy_axes         int      number of spacer axes to insert
+                                    (useful for pairwise comparisons)
         bezier_max_n       int      max number of genomes before
                                     straight lines are used instead of
                                     bezier curves (set to 0 for always
                                     straight)
+        source_angle       float    source angle for bezier curve
+                                    (radians)
+        target_angle       float    target angle for bezier curve
+                                    (radians)
+    
+    Color Palette Options:
+    
+        palette_usage      float    decimal percent of palette spectrum
+                                    to use
+        invert             bool     invert colors in palette
+        flip               bool     use palette in reverse order
+                    
+    Advanced Options:
+
         custom_font        str      full custom SVG text element for
                                     labels e.g.
                                     "font-size:12px; font-family:Arial;
@@ -355,8 +369,15 @@ number of references and query genomes.'
         try:
             palette = cc.palette[palette]
         except KeyError:
-            raise KeyError('Invalid color palette selection: %.' % palette)
+            raise KeyError('Invalid color palette selection: %s.' % palette)
         palette_len = len(palette) - 1
+    if invert:
+        for i, c in enumerate(palette):
+            c_int = int(c[1:], 16)
+            n_int = 0xFFFFFF - c_int
+            palette[i] = ('#%6x' % n_int).replace(' ', '0').upper()
+    if flip:
+        palette = palette[::-1]
             
     
     # ======== Setup and Check Geometry ========
@@ -440,9 +461,9 @@ resulting output. Decrease radii percentages to below 100 total.'
     # axis geometry
     positions = []
     if genome_array:
-        n_axes = len(genome_array)
+        n_axes = len(genome_array) + dummy_axes
     else:
-        n_axes = len(label_names)
+        n_axes = len(label_names) + dummy_axes
     theta = (2 * np.pi)/n_axes
     i_theta = np.deg2rad(rotation)
     for i in range(n_axes):
@@ -477,10 +498,9 @@ resulting output. Decrease radii percentages to below 100 total.'
         size=('%dpx' % width, '%dpx' % height),
         viewBox='%d %d %d %d' % viewBox,
         **svg_opts)
-    hive.axes = [Axis(
-        start=a, end=b,
-        **axes_opts
-        ) for a, b in positions]
+    for i, (a, b) in enumerate(positions):
+        if i < n_axes - dummy_axes:
+            hive.axes.append(Axis(start=a, end=b, **axes_opts))
     
     # ======== Connect up the Axes ========
     
@@ -490,41 +510,44 @@ resulting output. Decrease radii percentages to below 100 total.'
         pid_cov = 90.0
     n_paths = 0
     curved = False if len(genome_array) > bezier_max_n else True
-    source_angle = np.pi/4
-    target_angle = -np.pi/4
+    if source_angle is None:
+        source_angle = np.pi/4
+    if target_angle is None:
+        target_angle = -np.pi/4
     for i, match in enumerate(matches):
-        for node_index, (pos1, ctg1, pos2, ctg2, pid) in enumerate(match):
-            # calculate Node offsets
-            sum1 = pos1
-            for j, s in enumerate(contig_sizes[i-1]):
-                if j < ctg1:
-                    sum1 += s
-            off1 = float(sum1)/float(genome_sizes[i-1])
-            hive.axes[i-1].add_node(Node(), offset=off1)
+        if i or not dummy_axes:
+            for node_index, (pos1, ctg1, pos2, ctg2, pid) in enumerate(match):
+                # calculate Node offsets
+                sum1 = pos1
+                for j, s in enumerate(contig_sizes[i-1]):
+                    if j < ctg1:
+                        sum1 += s
+                off1 = float(sum1)/float(genome_sizes[i-1])
+                hive.axes[i-1].add_node(Node(), offset=off1)
+                
+                sum2 = pos2
+                for j, s in enumerate(contig_sizes[i]):
+                    if j < ctg2:
+                        sum2 += s
+                off2 = float(sum2)/float(genome_sizes[i])
+                hive.axes[i].add_node(Node(), offset=off2)
+                
+                # change this depending on color scheme used
+                if pid < pid_cov:
+                    pid = pid_cov
+                # convert pid into palette index
+                pid = int(round(palette_len * palette_usage * (pid - pid_cov) / (100 - pid_cov)))
+                n_paths += 1
+                hive.connect(
+                    hive.axes[i-1], node_index, source_angle,
+                    hive.axes[i], node_index, target_angle,
+                    curved=curved,
+                    stroke=palette[pid],
+                    **connection_opts)
             
-            sum2 = pos2
-            for j, s in enumerate(contig_sizes[i]):
-                if j < ctg2:
-                    sum2 += s
-            off2 = float(sum2)/float(genome_sizes[i])
-            hive.axes[i].add_node(Node(), offset=off2)
-            
-            # change this depending on color scheme used
-            if pid < pid_cov:
-                pid = pid_cov
-            # convert pid into palette index
-            pid = int(palette_len * palette_usage * (pid - pid_cov) / (100 - pid_cov) )
-            n_paths += 1
-            hive.connect(
-                hive.axes[i-1], node_index, source_angle,
-                hive.axes[i], node_index, target_angle,
-                curved=curved,
-                stroke=palette[pid],
-                **connection_opts)
-        
-        # Clear node arrays as they are not needed anymore
-        hive.axes[i-1].nodes = []
-        hive.axes[i].nodes = []
+            # Clear node arrays as they are not needed anymore
+            hive.axes[i-1].nodes = []
+            hive.axes[i].nodes = []
     
     # ======== Add Labels to Axes ========
     if not custom_font:
