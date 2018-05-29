@@ -3,20 +3,25 @@ Created on 6 Feb 2017
 
 @author: mb1511
 '''
-
 from __future__ import print_function
 from builtins import range
-from genomeweb.pyveplot2 import Hiveplot, Axis, Node
+
+import re
+import numpy as np
+import logging
+from warnings import warn
+from os.path import basename, splitext, join, exists
+
 import svgwrite as sw
 import svgutils as su
-import re
-from os.path import basename, splitext, join, exists
-import numpy as np
 import colorcet as cc
 
 from genomeweb import fasta, reorderctgs
-from genomeweb.blast import local_blast
-#import reorderctgs
+from genomeweb.pyveplot2 import Hiveplot, Axis, Node
+from genomeweb.blast import local_blast, match_calc
+
+class GeometryWarning(UserWarning):
+    pass
 
 def _get_props(gene_name):
     p = dict([ x.split('=') for x in re.findall('(?<=\[)(.*?)(?=\])', gene_name) if len(x.split('=')) == 2 ])
@@ -42,152 +47,19 @@ def _get_loc(props):
     return (f, t)
 
 def _get_matches(
-        n1, n2, chunk=2000, step=5000, pid_cov=90, hit_len=1500,
+        n1_path, n2_path, chunk=2000, step=5000, pid_cov=90, hit_len=1500,
         short_ctgs=False, shortck=30, shortsp=100, wd='',
         l_max_hsps=4, quiet=False, **kw):
     
     # should return ctg num and match posistion for n1 and n2
     # split genome into bits
-    n1 = fasta.fasta_read(n1, generator=False)    # genome 1
-    n2 = fasta.fasta_read(n2, generator=False)    # genome 2
+    n1 = fasta.fasta_read(n1_path, generator=False)    # genome 1
+    n2 = fasta.fasta_read(n2_path, generator=False)    # genome 2
     
-    ws_1, ws_2 = [], []
-    nams1, nams2 = [], []
-    full=0
-    short = False
+    itrs = match_calc.get_matches(
+        n1, n2, n1_path, n2_path, chunk, step, short_ctgs, shortck, shortsp,
+        wd, l_max_hsps, quiet, **kw)  
     
-    with open(join(wd, 'nuc_1.fna'), 'w') as s, \
-         open(join(wd, 'nuc_short.fna'), 'w') as d:
-        
-        for num, ctg in enumerate(n1):
-            if short_ctgs and len(ctg) < chunk:
-                # if short contig, run short analysis
-                ck = shortck
-                sp = shortsp
-            else:
-                ck = chunk
-                sp = step
-            
-            for i in range(0, len(ctg), sp):  #chunk
-                if i + ck <= len(ctg):
-                    seq = ctg[i : i + ck]
-                    name = re.sub('[\n\r]', '', ctg.name)
-                    
-                    name += '_[ctg=%d] [location=%d..%d]\n' % (
-                        num,
-                        i+1,
-                        1+i+len(seq))
-                    
-                    if ck == chunk:
-                        s.write(name)
-                        s.write(seq + '\n')
-                        full += 1
-                    else:
-                        d.write(name)
-                        d.write(seq + '\n')
-                        short = True
-            
-            ws_1.append(len(ctg))
-            nams1.append(ctg.name[1:ctg.name.find(' ')])
-    
-    with open(join(wd, 'nuc_2.fna'), 'w') as s:
-        for i, ctg in enumerate(n2):
-            name = re.sub('[\n\r]', '', ctg.name) + '_[ctg=%d]\n' % i
-            s.write(name)
-            s.write(ctg.seq)
-            s.write('\n')
-            ws_2.append(len(ctg))
-            nams2.append(ctg.name[1:ctg.name.find(' ')])
-    
-    # set blast defaults - can be overwritten in **kw
-    short_defaults = dict(
-        db_path=join(wd, 'db.fna'),
-        mr=0, mev=10000,
-        join_hsps=False,
-        b_type='blastn',
-        r_a=True,
-        num_threads=4,
-        quiet=quiet)
-    short_defaults.update(kw)
-    
-    # override task for short queries
-    if short_defaults['b_type'] == 'blastn':
-        short_defaults.update(task='blastn-short')
-    elif short_defaults['b_type'] == 'blastp':
-        short_defaults.update(task='blastp-short')
-    
-    if 'max_hsps' in kw:
-        del kw['max_hsps']
-    
-    long_defaults = dict(make_db=False)
-    
-    defaults = dict(
-        db_path=join(wd, 'db.fna'),
-        mr=0, mev=10000,
-        join_hsps=False,
-        b_type='blastn',
-        r_a=True,
-        num_threads=4,
-        max_hsps=l_max_hsps,
-        quiet=quiet)
-    
-    defaults.update(kw)
-    long_defaults.update(defaults)
-    
-    if short:
-    
-        local_blast.run(
-            join(wd, 'nuc_2.fna'),
-            query=join(wd, 'nuc_short.fna'),
-            out=join(wd, 'temp_blast_1.xml'),
-            outfmt='details',
-            **short_defaults)
-        if full:
-            local_blast.run(
-                join(wd, 'nuc_2.fna'),
-                query=join(wd, 'nuc_1.fna'),
-                out=join(wd, 'temp_blast_2.xml'),
-                outfmt='details',
-                **long_defaults)
-        else:
-            with open(join(wd, 'temp_blast_2.xml'), 'w') as fbx:
-                # clear file contents
-                fbx.write('')
-            
-        # concatenate blast output files
-        with open(join(wd, 'temp_blast.xml'), 'w') as o, \
-             open(join(wd, 'temp_blast_1.xml')) as i1,   \
-             open(join(wd, 'temp_blast_2.xml')) as i2:
-            
-            for line in i1:
-                if '</BlastOutput_iterations>' not in line:
-                    o.write(line)
-                else:
-                    break
-            
-            read_line=False
-            for line in i2:
-                if '<Iteration>' in line or read_line:
-                    read_line = True
-                    o.write(line)
-            # read concatenated xml output but don't run
-            itrs = local_blast.run(
-                join(wd, 'nuc_2.fna'),
-                query=join(wd, 'nuc_1.fna'),
-                out=join(wd, 'temp_blast.xml'),
-                mr=0, mev=10000,
-                outfmt='details', join_hsps=False,
-                b_type='blastn', r_a=True,
-                blast_run=False, make_db=False,
-                quiet=quiet)
-    
-    else:
-        itrs = local_blast.run(
-            db=join(wd, 'nuc_2.fna'),
-            query=join(wd, 'nuc_1.fna'),
-            out=join(wd, 'temp_blast.xml'),
-            outfmt='details',
-            **defaults)
     if not quiet:
         print('BLAST Search Complete.')    
     
@@ -232,7 +104,8 @@ def create_web(
         reorder_opts=dict(),
         matches_opts=dict(),
         svg_opts=dict(),
-        append=False, quiet=False):
+        append=False, quiet=False,
+        log='log.txt', loglevel='info', redirect_warnings=False):
     '''
     Create Gemoic Comparison Web
     
@@ -335,18 +208,35 @@ def create_web(
         >>> fig.save('figure.svg')
     
     '''
-
-    # check all files exist before running anything
+    
+    if log:
+        log_level = getattr(logging, loglevel.upper(), None)
+        if not isinstance(log_level, int):
+            raise ValueError('Invalid log level: %s' % loglevel)
+        
+        logging.basicConfig(
+            filename=join(working_directory, log),
+            filemode='w',
+            format='%(asctime)s %(message)s',
+            datefmt='%d/%m/%Y %I:%M:%S %p',
+            level=log_level)
+        logging.captureWarnings(redirect_warnings)
+    
+    # Check all files exist before running anything
     if isinstance(reference_genome, (list, tuple)):
-        # check the length of the two lists match if using multiple
-        # reference genomes
-        assert len(reference_genome) == len(genome_array), 'Unequal \
-number of references and query genomes.'
-        for f in reference_genome:
-            if f:
-                assert exists(f), '%s cannot be found.' % f
+        if reorder:
+            assert len(reference_genome) >= len(genome_array), \
+            'Unequal number of references and query genomes.'
+            # do not raise exception if greater as this will not cause
+            # the downstream functions to fail
+            if len(reference_genome) > len(genome_array):
+                warn('Number of reference genomes greater than input genomes.')
+            for f in reference_genome:
+                if f:
+                    assert exists(f), '%s cannot be found.' % f
     elif reorder:
-        assert exists(reference_genome), 'Reference genome: %s cannot be found.' % reference_genome
+        assert exists(reference_genome), \
+        'Reference genome: %s cannot befound.' % reference_genome
     for f in genome_array:
         assert exists(f), '%s cannot be found.' % f
         
@@ -363,6 +253,7 @@ number of references and query genomes.'
         if not quiet:
             print('Number of unique reference genomes: %d' % unq)
     
+    # Setup color palette config
     if isinstance(palette, (list, tuple)):
         palette_len = len(palette) - 1
     else:
@@ -382,22 +273,45 @@ number of references and query genomes.'
     
     # ======== Setup and Check Geometry ========
     
+    # global geometry
+    if width is None:
+        width = size
+    if height is None:
+        height = size
+    if viewBox is None:
+        viewBox = (0, 0, width, height)
+    
+    axis_warn = 'Some or all of the axes may not be visible.'
+    radii_warn = 'Radii total greater than 100 %. '
+    
     # inner-shell radius
     pre_r = int(inner_radius * size / 200)
     # outer-shell radius
     r = int(outer_radius * size / 200) + pre_r
+    
     if border_offset:
         # outer-shell boarder offset
         offset = int(border_offset * size / 200)
     else:
         offset = size / 2 - r
-        assert offset >= 0, 'Some axes may not be visible in resulting\
- output. Decrease radii percentages to below 100 total.'
-    assert r + offset <= size / 2, 'Some axes may not be visible in \
-resulting output. Decrease radii percentages to below 100 total.'
+        if offset < 0:
+            warn(radii_warn + axis_warn, GeometryWarning)
+    
+    if r + offset > size / 2:
+        warn(radii_warn + axis_warn, GeometryWarning)
+    
     # origin    
     ox = x + r + offset
     oy = y + r + offset
+    ori_warn = 'The origin is outside of the view area. '
+    if ox < 0 or ox > width or oy < 0 or oy > height:
+        warn(ori_warn, GeometryWarning)
+    
+    # this may be done on purpose, filter warning
+    plot_warn = 'The plot size is greater than the view area. '
+    if width < size or height < size:
+        warn(plot_warn + axis_warn, GeometryWarning)
+    
     
     # ======== Re-index Contigs ========
     
@@ -405,9 +319,11 @@ resulting output. Decrease radii percentages to below 100 total.'
     if not label_names:
         names = [splitext(basename(g))[0] for g in genome_array]
     else:
-        assert len(label_names) >= len(genome_array), 'Number of labels\
- does not match number of genomes.'
+        assert len(label_names) >= len(genome_array), \
+        'Number of labels does not match number of genomes.'
         names = label_names
+        if len(label_names) > len(genome_array):
+            warn('There are more labels than axes.')
     
     # reindex all contigs against reference
     # -> new adjusted array
@@ -444,7 +360,7 @@ resulting output. Decrease radii percentages to below 100 total.'
     contig_sizes = []
     genome_sizes = []
     # get matching regions for adjacent pairs in list starting with [-1] v [0]
-    # line filtering is alos done here
+    # line filtering is also done here
     for i, g in enumerate(genome_array):
         # get genome contig lengths
         ctgs = fasta.fasta_read(g)
@@ -457,7 +373,7 @@ resulting output. Decrease radii percentages to below 100 total.'
         # when evaluated
     
     # ======== Define Axes ========
-    
+    logging.info('Creating axes.')
     # axis geometry
     positions = []
     if genome_array:
@@ -476,14 +392,6 @@ resulting output. Decrease radii percentages to below 100 total.'
                 int(ox + r * np.cos(angle)),
                 int(oy + r * np.sin(angle)))
             ))
-    
-    # set global geometry
-    if width is None:
-        width = size
-    if height is None:
-        height = size
-    if viewBox is None:
-        viewBox = (0, 0, width, height)
         
     # save previous SVG in memory, if in append mode
     if append:
@@ -508,6 +416,7 @@ resulting output. Decrease radii percentages to below 100 total.'
         pid_cov = matches_opts['pid_cov']
     else:
         pid_cov = 90.0
+    logging.info('Connecting axes with cutoff of %.1f %%' % pid_cov)
     n_paths = 0
     curved = False if len(genome_array) > bezier_max_n else True
     if source_angle is None:
@@ -555,18 +464,21 @@ resulting output. Decrease radii percentages to below 100 total.'
     else:
         font = custom_font
     if add_labels:
-        for i, g in enumerate(names):
-            hive.axes[i].add_node(
-                Node(g, draw_label=True),
+        for i, ax in enumerate(hive.axes):
+            ax.add_node(
+                Node(names[i], draw_label=True),
                 offset=label_offset, font=font)
     
     # ======== Save and write svg ========
+    msg = 'Total number of connections: %d' % n_paths
+    logging.info(msg)
     if not quiet:
-        print('Total number of connections: ', n_paths)
+        print(msg)
         if append:
             print('Saving and merging files...')
         else:
             print('Saving %s...' % out_file)
+    logging.info('Output file: %s' % out_file)
     hive.save()
     if append:
         template.append(su.transform.fromfile(out_file))

@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import subprocess as sp
 import os
+import logging
+
 from genomeweb.blast import read
 
 BLAST_PATH = ''
@@ -87,15 +89,20 @@ def run(db=None, db_path='',
         with open(db, 'r') as s:
             with open(db_path, 'w') as q:
                 q.write(s.read())
+                logging.info('Copying %s to %s.' % (db, db_path))
         
-        # build database using makeblastdb.exe        
-        mdp = sp.Popen([makeblastdb, '-in', db_path,
-                       '-parse_seqids','-dbtype', db_type],
+        # build database using makeblastdb.exe
+        cmd = [makeblastdb, '-in', db_path, '-parse_seqids','-dbtype', db_type]
+        mdp = sp.Popen(cmd,
                        stdout=sp.PIPE, stderr=sp.PIPE)
         o, e = mdp.communicate()
         if not quiet:
-            print(o)
-            print(e)
+            print(str(o))
+            print(str(e))
+        logging.debug('--- BEGIN MAKEBLASTDB ---')
+        logging.info(' '.join(cmd))
+        logging.debug('StdOut:\n%s\nStdErr\n%s' % (str(o), str(e)))
+        logging.debug('--- END MAKEBLASTDB ---')
     
     add_args = []
     for arg in args:
@@ -112,12 +119,15 @@ def run(db=None, db_path='',
         # will just return what ever is in the temp_blast.xml if False  
         if not quiet:      
             print('Running BLAST: %s' % blast)
-        _o = sp.Popen([blast, '-query', query,
-                       '-db', db_path, '-out', out, '-outfmt', '5']
-                      + add_args, stdout=sp.PIPE, stderr=sp.STDOUT)
-        o = _o.communicate()[0]
-        #print(o)
-        #print(e)
+        cmd = [
+            blast, '-query', query, '-db', db_path, '-out', out, '-outfmt', '5'] + add_args
+        _b = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
+        o, e = _b.communicate()
+        logging.debug('--- BEGIN BLAST ---')
+        logging.info(' '.join(cmd))
+        logging.debug('StdOut:\n%s\nStdErr\n%s' % (str(o), str(e)))
+        logging.debug('--- END BLAST ---')
+        
     
     if out != '-':
         rd = False
@@ -137,6 +147,7 @@ def run(db=None, db_path='',
                 join_hsps=join_hsps, expect=mev, r_a=r_a)
     except StopIteration:
         # null record
+        logging.info('No match found in BLAST search.')
         return 'No match found.'
     
     return output

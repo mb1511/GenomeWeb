@@ -8,10 +8,12 @@ Created on 15 May 2018
 '''
 from __future__ import print_function
 from builtins import range
+
 import re
+import logging
 
 from genomeweb import fasta
-from genomeweb.blast import local_blast
+from genomeweb.blast import local_blast, match_calc
 from os.path import join
 
 def _get_props(gene_name):
@@ -39,7 +41,8 @@ def _get_loc(props):
 
 def run(
         query, reference, chunk=1000, step=2000, order_out='order_out.fna',
-        wd='', run_short=True, shortck=30, shortsp=100, l_max_hsps=4, **kw):
+        wd='', short_ctgs=True, shortck=30, shortsp=100, l_max_hsps=4,
+        quiet=False, **kw):
     '''
     TODO: add doc string
     '''
@@ -48,143 +51,11 @@ def run(
     n1 = fasta.fasta_read(query, generator=False)    # query
     n2 = fasta.fasta_read(reference, generator=False)    # reference
     
-    ws_1, ws_2 = [], []
-    nams1, nams2 = [], []
-    full = False
-    short = False
+    logging.info('Reindexing %s against %s.' % (query, reference))
     
-    with open(join(wd, 'nuc_1.fna'), 'w') as s, \
-         open(join(wd, 'nuc_short.fna'), 'w') as d:
-        
-        for num, ctg in enumerate(n1):
-            if len(ctg) < chunk and run_short:
-                # if short contig, run short analysis
-                short = True
-                ck = shortck
-                sp = shortsp
-            else:
-                full = True
-                ck = chunk
-                sp = step
-            
-            for i in range(0, len(ctg), sp):  #chunk
-                if i + ck <= len(ctg):
-                    seq = ctg[i : i + ck]
-                    name = re.sub('[\n\r]', '', ctg.name)
-                    
-                    name += '_[ctg=%d] [location=%d..%d]\n' % (
-                        num,
-                        i+1,
-                        1+i+len(seq))
-                    
-                    if ck == chunk:
-                        s.write(name)
-                        s.write(seq + '\n')
-                        full += 1
-                    else:
-                        d.write(name)
-                        d.write(seq + '\n')
-                        short = True
-            
-            ws_1.append(len(ctg))
-            nams1.append(ctg.name[1:ctg.name.find(' ')])
-    
-    with open(join(wd, 'nuc_2.fna'), 'w') as s:
-        for i, ctg in enumerate(n2):
-            name = re.sub('[\n\r]', '', ctg.name) + '_[ctg=%d]\n' % i
-            s.write(name)
-            s.write(ctg.seq)
-            s.write('\n')
-            ws_2.append(len(ctg))
-            nams2.append(ctg.name[1:ctg.name.find(' ')])
-    
-    # set blast defaults - can be overwritten in **kw
-    short_defaults = dict(
-        db_path=join(wd, 'db.fna'),
-        mr=0, mev=10000,
-        join_hsps=False,
-        b_type='blastn',
-        r_a=True,
-        num_threads=4)
-    short_defaults.update(kw)
-    
-    # override task for short queries
-    if short_defaults['b_type'] == 'blastn':
-        short_defaults.update(task='blastn-short')
-    elif short_defaults['b_type'] == 'blastp':
-        short_defaults.update(task='blastp-short')
-    
-    if 'max_hsps' in kw:
-        del kw['max_hsps']
-    
-    long_defaults = dict(make_db=False)
-    
-    defaults = dict(
-        db_path=join(wd, 'db.fna'),
-        mr=0, mev=10000,
-        join_hsps=False,
-        b_type='blastn',
-        r_a=True,
-        num_threads=4,
-        max_hsps=l_max_hsps)
-    
-    defaults.update(kw)
-    long_defaults.update(defaults)
-    
-    if short:
-    
-        local_blast.run(
-            join(wd, 'nuc_2.fna'),
-            query=join(wd, 'nuc_short.fna'),
-            out=join(wd, 'temp_blast_1.xml'),
-            outfmt='details',
-            **short_defaults)
-        if full:
-            local_blast.run(
-                join(wd, 'nuc_2.fna'),
-                query=join(wd, 'nuc_1.fna'),
-                out=join(wd, 'temp_blast_2.xml'),
-                outfmt='details',
-                **long_defaults)
-        else:
-            with open(join(wd, 'temp_blast_2.xml'), 'w') as fbx:
-                # clear file contents
-                fbx.write('')
-            
-        # concatenate blast output files
-        with open(join(wd, 'temp_blast.xml'), 'w') as o, \
-             open(join(wd, 'temp_blast_1.xml')) as i1,   \
-             open(join(wd, 'temp_blast_2.xml')) as i2:
-            
-            for line in i1:
-                if '</BlastOutput_iterations>' not in line:
-                    o.write(line)
-                else:
-                    break
-            
-            read_line=False
-            for line in i2:
-                if '<Iteration>' in line or read_line:
-                    read_line = True
-                    o.write(line)
-            # read concatenated xml output but don't run
-            itrs = local_blast.run(
-                join(wd, 'nuc_2.fna'),
-                query=join(wd, 'nuc_1.fna'),
-                out=join(wd, 'temp_blast.xml'),
-                mr=0, mev=10000,
-                outfmt='details', join_hsps=False,
-                b_type='blastn', r_a=True,
-                blast_run=False, make_db=False)
-    
-    else:
-        itrs = local_blast.run(
-            db=join(wd, 'nuc_2.fna'),
-            query=join(wd, 'nuc_1.fna'),
-            out=join(wd, 'temp_blast.xml'),
-            outfmt='details',
-            **defaults)
-    
+    itrs = match_calc.get_matches(
+        n1, n2, query, reference, chunk, step, short_ctgs, shortck, shortsp,
+        wd, l_max_hsps, quiet, **kw)    
     
     def _avg(lst):
         out = []
@@ -255,11 +126,10 @@ def run(
                 w.write(n1[i[0]].reverse_complement + '\n')
             else:
                 w.write(n1[i[0]].seq + '\n')
-    if 'quiet' in kw:
-        quiet = kw['quiet']
-    else:
-        quiet = False
+    
+    msg = 'Contig reorder complete. Output file: %s.' % order_out
     if not quiet:   
-        print('Contig reorder complete. Output file: %s.' % order_out)
+        print(msg)
+    logging.info(msg)
     return(order_out)
     
