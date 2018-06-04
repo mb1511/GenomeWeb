@@ -21,8 +21,8 @@ def test(func, i):
     try:
         func()
         pf = 'Pass'
-    except Exception as e:
-        pass
+    except Exception as ex:
+        e = ex
     print('Test %d:\t%s\t%s' % (i, pf, e))
     return e
 

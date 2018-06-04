@@ -74,6 +74,7 @@ def run(db=None, db_path='',
     **kwargs -   additional arguments to parse to blast application 
                  e.g: arg = value -> adds argument [..., '-arg', 'value'] 
     '''
+    global OK, BLAST_PATH
     
     if not OK:
         # check path first
