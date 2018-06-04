@@ -15,6 +15,8 @@ from genomeweb.blast import read
 
 BLAST_PATH = ''
 
+# can override blast check if required
+OK = False
 
 
 def run(db=None, db_path='', 
@@ -23,7 +25,7 @@ def run(db=None, db_path='',
         mev=0.001, mr=0, join_hsps=False, b_type='blastp', 
         make_db=True, db_type=None, outfmt='clustal',
         blast_run=True, r_a=False, quiet=False, *args, **kwargs):
-    u'''
+    '''
     Local BLAST
     
     db      -    raw *.faa/fna proteome file path; formats blast db from 
@@ -72,14 +74,16 @@ def run(db=None, db_path='',
     **kwargs -   additional arguments to parse to blast application 
                  e.g: arg = value -> adds argument [..., '-arg', 'value'] 
     '''
-    if 'blast-' not in os.environ['PATH']:
-        try:
-            sp.call(['blastp', '-version'], stdout=sp.PIPE, stderr=sp.PIPE)
-        except OSError:
-            raise OSError('BLAST executables not found. Please set genomeweb.blast.BLAST_PATH to path/to/NCBI/blast-x.x.x+/bin')
-        #BLAST_PATH = 'path/to/NCBI/blast-2.7.1+/bin/'
     
-    
+    if not OK:
+        # check path first
+        if 'blast-' not in os.environ['PATH']:
+            # try a call to blastp
+            try:
+                sp.call(['blastp', '-version'], stdout=sp.PIPE, stderr=sp.PIPE)
+            except OSError:
+                raise OSError('BLAST executables not found. Please set genomeweb.blast.BLAST_PATH to path/to/NCBI/blast-x.x.x+/bin')
+        OK = True
     
     makeblastdb = os.path.join(BLAST_PATH, 'makeblastdb')
     blast = BLAST_PATH + b_type
