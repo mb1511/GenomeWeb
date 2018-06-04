@@ -35,13 +35,17 @@ If using an installer, it should automatically prepend the system path.
 If the following libraries are not already installed, run the following command from a Terminal/Command Prompt:
 	
 	pip install numpy colorcet svgwrite svgutils
+	
+I using Python 2.7.x, the following may also need to be installed:
+
+	pip install future
 
 (pip should be installed by default with Python)
 
 Install the scripts:
 
 * Download and unzip this repository.
-* Navigate to the download direcotry and open a Terminal/Command Prompt/PowerShell here (Shift + Right-click on Windows gives the option for this)
+* Navigate to the download directory and open a Terminal/Command Prompt/PowerShell here (Shift + Right-click on Windows gives the option for this)
 * Run the install script:
 
 On UNIX-based systems:
