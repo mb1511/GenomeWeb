@@ -8,7 +8,7 @@ Created on 11 Jun 2016
 from __future__ import print_function 
 
 import subprocess as sp
-import os
+from os.path import join
 import logging
 
 from genomeweb.blast import read
@@ -77,17 +77,22 @@ def run(db=None, db_path='',
     global OK, BLAST_PATH
     
     if not OK:
-        # check path first
-        if 'blast-' not in os.environ['PATH']:
-            # try a call to blastp
-            try:
+        # try a call to blastp
+        try:
+            if not BLAST_PATH:
                 sp.call(['blastp', '-version'], stdout=sp.PIPE, stderr=sp.PIPE)
-            except OSError:
-                raise OSError('BLAST executables not found. Please set genomeweb.blast.BLAST_PATH to path/to/NCBI/blast-x.x.x+/bin')
+            else:
+                sp.call([join(BLAST_PATH, 'blastp'), '-version'], stdout=sp.PIPE, stderr=sp.PIPE)
+        except OSError:
+            raise OSError('BLAST executables not found. Please set genomeweb.blast.BLAST_PATH to path/to/NCBI/blast-x.x.x+/bin')
         OK = True
     
-    makeblastdb = os.path.join(BLAST_PATH, 'makeblastdb')
-    blast = BLAST_PATH + b_type
+    if BLAST_PATH:
+        makeblastdb = join(BLAST_PATH, 'makeblastdb')
+        blast = join(BLAST_PATH, b_type)
+    else:
+        makeblastdb = 'makeblastdb'
+        blast = b_type
     
     if db_type is None:
         if b_type.startswith('t') or 'n' in b_type:
