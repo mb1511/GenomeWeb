@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name='genomeweb',
-    version='0.1',
+    version='0.2',
     description='Genomic Web Creation',
     long_description=readme(),
     classifiers=[
@@ -23,6 +23,6 @@ setup(
     author_email='mb1511@bristol.ac.uk',
     license='GPLv3',
     packages=['genomeweb', 'genomeweb/blast'],
-    install_requires=['numpy', 'colorcet', 'svgwrite', 'svgutils'],
+    install_requires=['numpy', 'colorcet', 'svgwrite', 'svgutils', 'future'],
     zip_safe=False)
 
