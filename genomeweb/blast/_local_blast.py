@@ -15,9 +15,7 @@ from genomeweb.blast import read
 
 BLAST_PATH = ''
 
-if 'blast-' not in os.environ['PATH']:
-    raise OSError('BLAST executables not found. Please set genomeweb.blast.BLAST_PATH to path/to/NCBI/blast-x.x.x+/bin')
-    #BLAST_PATH = 'path/to/NCBI/blast-2.7.1+/bin/'
+
 
 def run(db=None, db_path='', 
         query = '',
@@ -74,6 +72,14 @@ def run(db=None, db_path='',
     **kwargs -   additional arguments to parse to blast application 
                  e.g: arg = value -> adds argument [..., '-arg', 'value'] 
     '''
+    if 'blast-' not in os.environ['PATH']:
+        try:
+            sp.call(['blastp', '-version'], stdout=sp.PIPE, stderr=sp.PIPE)
+        except OSError:
+            raise OSError('BLAST executables not found. Please set genomeweb.blast.BLAST_PATH to path/to/NCBI/blast-x.x.x+/bin')
+        #BLAST_PATH = 'path/to/NCBI/blast-2.7.1+/bin/'
+    
+    
     
     makeblastdb = os.path.join(BLAST_PATH, 'makeblastdb')
     blast = BLAST_PATH + b_type
