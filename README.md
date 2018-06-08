@@ -36,7 +36,7 @@ If the following libraries are not already installed, run the following command 
 	
 	pip install numpy colorcet svgwrite svgutils
 	
-I using Python 2.7.x, the following may also need to be installed:
+If using Python 2.7.x, the following may also need to be installed:
 
 	pip install future
 
