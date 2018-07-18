@@ -19,32 +19,10 @@ import colorcet as cc
 from genomeweb import fasta, reorderctgs
 from genomeweb.pyveplot2 import Hiveplot, Axis, Node
 from genomeweb.blast import local_blast, match_calc
+from genomeweb.reorderctgs import _get_props, _get_loc
 
 class GeometryWarning(UserWarning):
     pass
-
-def _get_props(gene_name):
-    p = dict([ x.split('=') for x in re.findall('(?<=\[)(.*?)(?=\])', gene_name) if len(x.split('=')) == 2 ])
-    contig = re.findall('(?<=\|)(.*?)(?=_cds)', gene_name)
-    if not contig:
-        contig = re.findall('(?<=\>)(.*?)(?=_cds)', gene_name)
-    try:
-        p['contig'] = contig[0]
-    except IndexError:
-        # no contig
-        pass
-    return p
-
-def _get_loc(props):
-    if 'comp' in props['location']:
-        props['location'] = props['location'][11:-1]
-    if 'join' in props['location']:
-        props['location'] = props['location'][5:-1].split(',')
-        props['location'] = props['location'][0] + '..' + props['location'][1]
-    l =  props['location'].split('..')
-    f = re.sub('[<;>]|&lt|&gt', '', l[0])
-    t = re.sub('[<;>]|&lt|&gt', '', l[1])
-    return (f, t)
 
 def _get_matches(
         n1_path, n2_path, chunk=2000, step=5000, pid_cov=90, hit_len=1500,
@@ -53,8 +31,8 @@ def _get_matches(
     
     # should return ctg num and match posistion for n1 and n2
     # split genome into bits
-    n1 = fasta.fasta_read(n1_path, generator=False)    # genome 1
-    n2 = fasta.fasta_read(n2_path, generator=False)    # genome 2
+    n1 = fasta.fasta_read(n1_path, generator=False)
+    n2 = fasta.fasta_read(n2_path, generator=False)
     
     itrs = match_calc.get_matches(
         n1, n2, n1_path, n2_path, chunk, step, short_ctgs, shortck, shortsp,
@@ -70,7 +48,7 @@ def _get_matches(
             
             # get axis index
             l_axis_index = int(q_props['ctg'])
-            # get location on (left) contig
+            # get location on contig
             q_loc = int(_get_loc(q_props)[0])
             
             # get right contig y coordinates
@@ -209,6 +187,8 @@ def create_web(
     
     '''
     
+    # ======== Initialise and validate options =========
+
     if log:
         log_level = getattr(logging, loglevel.upper(), None)
         if not isinstance(log_level, int):
@@ -270,8 +250,7 @@ def create_web(
     if flip:
         palette = palette[::-1]
             
-    
-    # ======== Setup and Check Geometry ========
+    # ========= Setup and Check Geometry =========
     
     # global geometry
     if width is None:
@@ -313,7 +292,7 @@ def create_web(
         warn(plot_warn + axis_warn, GeometryWarning)
     
     
-    # ======== Re-index Contigs ========
+    # ========= Re-index Contigs =========
     
     # set label names
     if not label_names:
@@ -372,15 +351,15 @@ def create_web(
         # will return ctg_l, pos_l, ctg_r, pos_r and pid
         # when evaluated
     
-    # ======== Define Axes ========
+    # ========= Define Axes =========
+
     logging.info('Creating axes.')
-    # axis geometry
     positions = []
     if genome_array:
         n_axes = len(genome_array) + dummy_axes
     else:
         n_axes = len(label_names) + dummy_axes
-    theta = (2 * np.pi)/n_axes
+    theta = (2 * np.pi) / n_axes
     i_theta = np.deg2rad(rotation)
     for i in range(n_axes):
         angle = i_theta + theta * i
@@ -392,7 +371,9 @@ def create_web(
                 int(ox + r * np.cos(angle)),
                 int(oy + r * np.sin(angle)))
             ))
-        
+    
+    # ========= Define hive plot =========
+
     # save previous SVG in memory, if in append mode
     if append:
         if isinstance(append, bool):
@@ -400,17 +381,18 @@ def create_web(
         else:
             template = su.transform.fromfile(append)
     
-    # define hive plot object
     hive = Hiveplot(
         out_file,
         size=('%dpx' % width, '%dpx' % height),
         viewBox='%d %d %d %d' % viewBox,
         **svg_opts)
+    
+    # link the axes to the plot
     for i, (a, b) in enumerate(positions):
         if i < n_axes - dummy_axes:
             hive.axes.append(Axis(start=a, end=b, **axes_opts))
     
-    # ======== Connect up the Axes ========
+    # ========= Connect up the Axes =========
     
     if 'pid_cov' in matches_opts:
         pid_cov = matches_opts['pid_cov']
@@ -419,10 +401,13 @@ def create_web(
     logging.info('Connecting axes with cutoff of %.1f %%' % pid_cov)
     n_paths = 0
     curved = False if len(genome_array) > bezier_max_n else True
+
+    # default connection angles = 45 deg
     if source_angle is None:
-        source_angle = np.pi/4
+        source_angle = np.pi / 4
     if target_angle is None:
-        target_angle = -np.pi/4
+        target_angle = -np.pi / 4
+
     for i, match in enumerate(matches):
         if i or not dummy_axes:
             for node_index, (pos1, ctg1, pos2, ctg2, pid) in enumerate(match):
@@ -454,11 +439,13 @@ def create_web(
                     stroke=palette[pid],
                     **connection_opts)
             
-            # Clear node arrays as they are not needed anymore
+            # clear node arrays as they are not needed anymore
+            # should save some memory in large graphs
             hive.axes[i-1].nodes = []
             hive.axes[i].nodes = []
     
-    # ======== Add Labels to Axes ========
+    # ========= Add Labels to Axes =========
+
     if not custom_font:
         font = 'font-size:%dpx; font-family:%s' % (font_size, font_family)
     else:
@@ -469,7 +456,8 @@ def create_web(
                 Node(names[i], draw_label=True),
                 offset=label_offset, font=font)
     
-    # ======== Save and write svg ========
+    # ========= Save and write svg =========
+
     msg = 'Total number of connections: %d' % n_paths
     logging.info(msg)
     if not quiet:

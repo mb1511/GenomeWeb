@@ -17,10 +17,10 @@ from genomeweb.blast import local_blast, match_calc
 from os.path import join
 
 def _get_props(gene_name):
-    p = dict([ x.split('=') for x in re.findall('(?<=\[)(.*?)(?=\])', gene_name) if len(x.split('=')) == 2])
-    contig = re.findall('(?<=\|)(.*?)(?=_cds)', gene_name)
+    p = dict([ x.split('=') for x in re.findall(r'(?<=\[)(.*?)(?=\])', gene_name) if len(x.split('=')) == 2])
+    contig = re.findall(r'(?<=\|)(.*?)(?=_cds)', gene_name)
     if not contig:
-        contig = re.findall('(?<=\>)(.*?)(?=_cds)', gene_name)
+        contig = re.findall(r'(?<=\>)(.*?)(?=_cds)', gene_name)
     try:
         p['contig'] = contig[0]
     except IndexError:
@@ -48,8 +48,8 @@ def run(
     '''
     
     # split genome into bits
-    n1 = fasta.fasta_read(query, generator=False)    # query
-    n2 = fasta.fasta_read(reference, generator=False)    # reference
+    n1 = fasta.fasta_read(query, generator=False)
+    n2 = fasta.fasta_read(reference, generator=False)
     
     logging.info('Reindexing %s against %s.' % (query, reference))
     

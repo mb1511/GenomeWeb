@@ -97,8 +97,8 @@ class Hiveplot(Drawing):
             alfa = axis0.angle + source_angle
             length = sqrt(
                 (n0.x - axis0.start[0])**2 + (n0.y - axis0.start[1])**2)
-            x = axis0.start[0] + length * cos(alfa);
-            y = axis0.start[1] + length * sin(alfa);
+            x = axis0.start[0] + length * cos(alfa)
+            y = axis0.start[1] + length * sin(alfa)
             
             # first control point in path
             pth.push("C %.f %.f" % (x, y))
@@ -107,8 +107,8 @@ class Hiveplot(Drawing):
             alfa = axis1.angle + target_angle
             length = sqrt(
                 (n1.x - axis1.start[0])**2 + (n1.y - axis1.start[1])**2)
-            x = axis1.start[0] + length * cos(alfa);
-            y = axis1.start[1] + length * sin(alfa);
+            x = axis1.start[0] + length * cos(alfa)
+            y = axis1.start[1] + length * sin(alfa)
             
             # second control point in path
             pth.push("%.f %.f" % (x, y))
@@ -225,7 +225,11 @@ class Node(Drawing):
 
 if __name__ == '__main__':
     # A short example
-    import networkx
+    try:
+        import networkx
+    except ImportError:
+        raise ImportError(
+            'networkx not installed. It can be installed using `pip install networkx`')
     import random
     # a network
     g = networkx.barabasi_albert_graph(50, 2)
@@ -262,4 +266,3 @@ if __name__ == '__main__':
                 h.axes[2], e[1], -pi/8,
                 stroke_width='0.34', stroke_opacity='0.4', stroke='magenta')
     h.save()
-        
