@@ -11,10 +11,10 @@ from builtins import range
 
 import re
 import logging
+from os.path import join
 
 from genomeweb import fasta
 from genomeweb.blast import match_calc
-from os.path import join
 
 def _get_props(gene_name):
     p = dict([ x.split('=') for x in re.findall(r'(?<=\[)(.*?)(?=\])', gene_name) if len(x.split('=')) == 2])

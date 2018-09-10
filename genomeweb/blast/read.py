@@ -18,16 +18,14 @@ class _make_class:
     def __init__(self, dct):
         self.__dict__.update(dct)
 
-class blast_output:
-    u'''
-    reads blast output xml file and formats to a multilayered callable object;
-    unlike biopython, this can read files containing multiple queries
+class BlastOutput:
+    '''
+    Reads blast output xml file and formats to a multilayered callable object
+    
+    Similar to parsing in BioPython, but stripped back into a single module
     '''
 
-    def __init__(self, data):
-        #with open(file_path) as s:
-        #    self.xml = s.read() # make generator possibly??
-        
+    def __init__(self, data):        
         self.iterations = ( Iteration(x) for x in _read('Iteration', data) )
     def __iter__(self):
         return self.iterations
@@ -107,15 +105,9 @@ class Hsp:
             raise StopIteration('HSP Error')
 
 def _read(tag, search_space):
-    u'''
-    gets data between tags - returns list for all tag instances
     '''
-    # make generator
-    #data = [ d for i, d in enumerate(re.split( ('<%s>|</%s>' % (tag, tag)),
-    #                                           search_space )) if i!=0 and d!='' and d.strip(' ')!='\n' ]
-    #if len(data) > 1:
-    #    del data[-1]
-    #return data
+    Gets data between tags - returns list for all tag instances
+    '''
     for i, d in enumerate(re.split( ('<%s>|</%s>' % (tag, tag)), search_space)):
         x = d.replace(' ', '').strip()
         if d == ' ' or x == '\n' or i == 0 or x == '\r' or x == '':
@@ -124,7 +116,7 @@ def _read(tag, search_space):
             yield d
 
 def _get(xml, num_ret=0, join_hsps=False, expect=1, r_a=False, **kw):
-    u'''
+    '''
     xml - file path to xml output
     num_ret - number of hits to return for each iteration, default = 0 -> returns all
     expect - max e-value threashold for hsp, default = 1
@@ -213,9 +205,7 @@ def _get(xml, num_ret=0, join_hsps=False, expect=1, r_a=False, **kw):
                                 try:
                                     hsp = next(hit)     # set to next hsp
                                 except StopIteration:
-                                    break
-                            
-                            
+                                    break   
                             
                     else:                        
                         r['score'] = []     # sum
@@ -274,13 +264,10 @@ def _get(xml, num_ret=0, join_hsps=False, expect=1, r_a=False, **kw):
                             
                     yield _make_class(r)
     
-    record = blast_output(xml)
+    record = BlastOutput(xml)
     for iteration in record:
         yield hits(iteration)
         
-        
-        
-                        
 
 def _format(s1, s2=None, m=None, num_pl = 60, pad=0, det=False, 
             qf=0, qt=0, hf=0, ht=0, **kw):
@@ -349,8 +336,8 @@ def _format(s1, s2=None, m=None, num_pl = 60, pad=0, det=False,
             
 
 def fasta(xml, raw_data=False, *args, **kw):
-    u'''
-    returns hits in fasta format
+    '''
+    Returns hits in fasta format
     '''
     
     if raw_data:
@@ -383,8 +370,8 @@ def fasta(xml, raw_data=False, *args, **kw):
     return out
 
 def clustal(xml, raw_data=False, *args, **kw):
-    u'''
-    returns alignments in clustal style
+    '''
+    Returns alignments in clustal style
     '''
     
     if raw_data:
@@ -437,8 +424,8 @@ def clustal(xml, raw_data=False, *args, **kw):
     return out
 
 def details(xml, raw_data=False, *args, **kw):
-    u'''
-    returns alignment details as list of classes
+    '''
+    Returns alignment details as list of classes
     '''
     
     if raw_data:
@@ -447,6 +434,7 @@ def details(xml, raw_data=False, *args, **kw):
         f = open(xml, 'r+')
         data = f.read()
         f.close()
+        # for big files:
         #data = mmap.mmap(f.fileno(), 0)
     
     records = _get(data, *args, **kw) # returns deeply-nested generator
@@ -464,5 +452,4 @@ def details(xml, raw_data=False, *args, **kw):
     return out
 
 if __name__ == '__main__':
-    print( clustal('temp_blast.xml', num_ret=0) )
-    
+    print(clustal('temp_blast.xml', num_ret=0))
