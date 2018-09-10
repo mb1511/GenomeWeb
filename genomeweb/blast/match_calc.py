@@ -20,7 +20,10 @@ def get_matches(
         short_ctgs=False, shortck=30, shortsp=100, wd='', l_max_hsps=4,
         quiet=False, **kw):
     
-    full=0
+    # check BLAST can be found - will raise error if not
+    local_blast.check_blast()
+
+    full = 0
     short = False
     
     with open(join(wd, 'nuc_1.fna'), 'w') as s, \

@@ -13,7 +13,7 @@ import re
 import logging
 
 from genomeweb import fasta
-from genomeweb.blast import local_blast, match_calc
+from genomeweb.blast import match_calc
 from os.path import join
 
 def _get_props(gene_name):

@@ -57,16 +57,17 @@ kw = dict(
 
 # multi-panel figure 
 gw.create_web(
-    files[:4], reference='genomes/ref_a.fna', label_names=names[:4], **kw)
+    files[:4], reference_genome='genomes/ref_a.fna',
+    label_names=names[:4], **kw)
 gw.create_web(
-    files[4:9], reference='genomes/ref_b.fna', label_names=names[4:9],
-    x=ssize, append=True, **kw)
+    files[4:9], reference_genome='genomes/ref_b.fna',
+    label_names=names[4:9], x=ssize, append=True, **kw)
 gw.create_web(
-    files[9:18], reference='genomes/ref_c.fna', label_names=names[9:18],
-    x=0, y=ssize, append=True, **kw)
+    files[9:18], reference_genome='genomes/ref_c.fna',
+    label_names=names[9:18], x=0, y=ssize, append=True, **kw)
 fig = gw.create_web(
-    files[18:], reference='genomes/ref_d.fna', label_names=names[18:],
-    x=ssize, y=ssize, append=True, **kw)
+    files[18:], reference_genome='genomes/ref_d.fna',
+    label_names=names[18:], x=ssize, y=ssize, append=True, **kw)
 
 # add annotations
 text_opts = dict(size=12, font='Arial', weight='bold')
